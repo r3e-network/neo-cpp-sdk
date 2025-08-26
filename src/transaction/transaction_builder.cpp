@@ -460,30 +460,62 @@ bool TransactionBuilder::signersContainMultiSigWithCommitteeMember(const std::ve
     for (const auto& witness : witnesses) {
         try {
             // Parse verification script to check for multi-sig structure
-            // This is a simplified example - real implementation would need to properly parse the script
             const auto& verificationScript = witness->getVerificationScript();
             
-            // For multi-sig scripts, the structure typically includes:
-            // 1. Push N (minimum signatures required)
-            // 2. Push M public keys (total signatures available)
-            // 3. Push M
-            // 4. System call "OP_CHECKMULTISIG"
+            // Multi-sig scripts have specific structure:
+            // [OP_PUSH1 + threshold] [OP_PUSH1 + pubkey1] ... [OP_PUSH1 + pubkeyN] [OP_PUSH1 + N] [OP_CHECKMULTISIG]
             
-            // Check if this looks like a multi-sig script
-            if (verificationScript.size() > 100 && verificationScript.back() == 0xAE) { // OP_CHECKMULTISIG
-                // Extract and check if any of the public keys in the multi-sig script belong to committee members
-                // This is a placeholder for actual script parsing logic
+            // Check if this is a multi-sig script by checking the last opcode
+            if (verificationScript.size() > 35 && verificationScript.back() == 0xAE) { // OP_CHECKMULTISIG
+                // Parse the multi-sig script to extract public keys
+                size_t pos = 0;
                 
-                // For each committee member, check if their public key is in this verification script
-                for (const auto& committeeHash : committee) {
-                    // In a real implementation, you would properly extract public keys from the script
-                    // and compare their hashes against committee members
+                // Read threshold (M of N)
+                if (pos < verificationScript.size() && verificationScript[pos] >= 0x51 && verificationScript[pos] <= 0x60) {
+                    int threshold = verificationScript[pos] - 0x50;
+                    pos++;
                     
-                    // This is a simplified check - in practice, you need to parse the script correctly
-                    auto committeeBytes = committeeHash.toArray();
-                    if (std::search(verificationScript.begin(), verificationScript.end(), 
-                                   committeeBytes.begin(), committeeBytes.end()) != verificationScript.end()) {
-                        return true;
+                    // Extract public keys from the script
+                    std::vector<Bytes> publicKeys;
+                    while (pos < verificationScript.size() - 2) {
+                        // Check for public key push operation (33 or 65 bytes)
+                        if (verificationScript[pos] == 0x21) { // 33 bytes compressed public key
+                            if (pos + 34 <= verificationScript.size()) {
+                                Bytes pubKey(verificationScript.begin() + pos + 1, verificationScript.begin() + pos + 34);
+                                publicKeys.push_back(pubKey);
+                                pos += 34;
+                            } else {
+                                break;
+                            }
+                        } else if (verificationScript[pos] == 0x41) { // 65 bytes uncompressed public key
+                            if (pos + 66 <= verificationScript.size()) {
+                                Bytes pubKey(verificationScript.begin() + pos + 1, verificationScript.begin() + pos + 66);
+                                publicKeys.push_back(pubKey);
+                                pos += 66;
+                            } else {
+                                break;
+                            }
+                        } else if (verificationScript[pos] >= 0x51 && verificationScript[pos] <= 0x60) {
+                            // This is the N value (number of public keys)
+                            int n = verificationScript[pos] - 0x50;
+                            if (n == publicKeys.size()) {
+                                // Valid multi-sig script, now check against committee members
+                                for (const auto& pubKey : publicKeys) {
+                                    // Calculate script hash from public key
+                                    Hash160 pubKeyHash = Hash160::fromPublicKey(pubKey);
+                                    
+                                    // Check if this public key hash matches any committee member
+                                    for (const auto& committeeHash : committee) {
+                                        if (pubKeyHash == committeeHash) {
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        } else {
+                            break; // Invalid script structure
+                        }
                     }
                 }
             }

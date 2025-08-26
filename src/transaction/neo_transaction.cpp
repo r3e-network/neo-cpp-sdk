@@ -1,6 +1,9 @@
 #include "neocpp/transaction/neo_transaction.hpp"
 #include "neocpp/crypto/hash.hpp"
 #include "neocpp/utils/hex.hpp"
+#include "neocpp/serialization/binary_writer.hpp"
+#include "neocpp/serialization/binary_reader.hpp"
+#include <algorithm>
 
 namespace neocpp {
 
@@ -30,30 +33,65 @@ NeoTransaction::NeoTransaction(
 }
 
 Bytes NeoTransaction::getHash() const {
-    // TODO: Implement proper transaction serialization and hashing
-    // This is a placeholder implementation
-    Bytes serialized;
+    // Proper implementation following Neo protocol
+    // Transaction hash is SHA256 of the transaction without witnesses, reversed
+    Bytes serialized = serializeWithoutWitnesses();
+    Bytes hash = Hash::sha256(serialized);
+    // Reverse the hash bytes for Neo format
+    std::reverse(hash.begin(), hash.end());
+    return hash;
+}
+
+Bytes NeoTransaction::serializeWithoutWitnesses() const {
+    BinaryWriter writer;
     
-    // Add version
-    serialized.push_back(version_);
+    // Write version byte
+    writer.writeByte(version_);
     
-    // Add nonce (4 bytes)
-    serialized.push_back((nonce_ >> 0) & 0xFF);
-    serialized.push_back((nonce_ >> 8) & 0xFF);
-    serialized.push_back((nonce_ >> 16) & 0xFF);
-    serialized.push_back((nonce_ >> 24) & 0xFF);
+    // Write nonce as UInt32
+    writer.writeUInt32(nonce_);
     
-    // Add validUntilBlock (4 bytes)
-    serialized.push_back((validUntilBlock_ >> 0) & 0xFF);
-    serialized.push_back((validUntilBlock_ >> 8) & 0xFF);
-    serialized.push_back((validUntilBlock_ >> 16) & 0xFF);
-    serialized.push_back((validUntilBlock_ >> 24) & 0xFF);
+    // Write system fee as Int64
+    writer.writeInt64(systemFee_);
     
-    // Add script
-    serialized.insert(serialized.end(), script_.begin(), script_.end());
+    // Write network fee as Int64
+    writer.writeInt64(networkFee_);
     
-    // Hash the serialized transaction
-    return HashUtils::doubleSha256(serialized);
+    // Write valid until block as UInt32
+    writer.writeUInt32(validUntilBlock_);
+    
+    // Write signers as variable length array
+    writer.writeVarInt(signers_.size());
+    for (const auto& signer : signers_) {
+        signer.serialize(writer);
+    }
+    
+    // Write attributes as variable length array
+    writer.writeVarInt(attributes_.size());
+    for (const auto& attribute : attributes_) {
+        attribute.serialize(writer);
+    }
+    
+    // Write script as variable length bytes
+    writer.writeVarBytes(script_);
+    
+    return writer.toArray();
+}
+
+Bytes NeoTransaction::serialize() const {
+    BinaryWriter writer;
+    
+    // First serialize everything except witnesses
+    Bytes withoutWitnesses = serializeWithoutWitnesses();
+    writer.writeBytes(withoutWitnesses);
+    
+    // Then add witnesses
+    writer.writeVarInt(witnesses_.size());
+    for (const auto& witness : witnesses_) {
+        witness.serialize(writer);
+    }
+    
+    return writer.toArray();
 }
 
 std::string NeoTransaction::getHashHex() const {

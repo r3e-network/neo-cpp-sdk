@@ -1,10 +1,15 @@
 #include "neocpp/transaction/transaction.hpp"
-#include "neocpp/transaction/signer.hpp"
-#include "neocpp/transaction/witness.hpp"
+#include "neocpp/transaction/transaction_builder.hpp"
 #include "neocpp/transaction/transaction_attribute.hpp"
+#include "neocpp/transaction/witness.hpp"
+#include "neocpp/transaction/signer.hpp"
+#include "neocpp/crypto/ecdsa_signature.hpp"
+#include "neocpp/wallet/account.hpp"
 #include "neocpp/serialization/binary_writer.hpp"
 #include "neocpp/serialization/binary_reader.hpp"
 #include "neocpp/crypto/hash.hpp"
+#include "neocpp/wallet/account.hpp"
+#include "neocpp/crypto/ec_key_pair.hpp"
 #include "neocpp/neo_constants.hpp"
 #include "neocpp/exceptions.hpp"
 #include <algorithm>
@@ -37,6 +42,20 @@ void Transaction::addAttribute(const SharedPtr<TransactionAttribute>& attribute)
 
 void Transaction::addWitness(const SharedPtr<Witness>& witness) {
     witnesses_.push_back(witness);
+}
+
+void Transaction::sign(const SharedPtr<Account>& account) {
+    // Calculate the hash of the transaction
+    Hash256 hash = getHash();
+    
+    // Sign the hash with the account's key pair
+    SharedPtr<ECDSASignature> signature = account->getKeyPair()->sign(hash.toArray());
+    
+    // Create a witness from the signature and public key
+    SharedPtr<Witness> witness = Witness::fromSignature(signature->getBytes(), account->getKeyPair()->getPublicKey()->getEncoded());
+    
+    // Add the witness to the transaction
+    addWitness(witness);
 }
 
 const Hash256& Transaction::getHash() const {

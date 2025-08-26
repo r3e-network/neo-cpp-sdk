@@ -121,7 +121,7 @@ bool Account::verify(const Bytes& message, const Bytes& signature) const {
         return false;
     }
     
-    ECDSASignature sig(signature);
+    auto sig = std::make_shared<ECDSASignature>(signature);
     return keyPair_->getPublicKey()->verify(message, sig);
 }
 

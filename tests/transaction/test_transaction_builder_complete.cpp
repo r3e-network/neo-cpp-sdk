@@ -1,7 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include "neocpp/transaction/transaction_builder.hpp"
+#include "neocpp/transaction/transaction.hpp"
 #include "neocpp/transaction/account_signer.hpp"
 #include "neocpp/transaction/contract_signer.hpp"
+#include "neocpp/transaction/witness.hpp"
 #include "neocpp/wallet/account.hpp"
 #include "neocpp/script/script_builder.hpp"
 #include "neocpp/types/hash160.hpp"
@@ -196,8 +199,8 @@ TEST_CASE("TransactionBuilder Complete Tests", "[transaction]") {
         tx->sign(account1);
         
         REQUIRE(tx->getWitnesses().size() == 1);
-        REQUIRE(!tx->getWitnesses()[0].getInvocationScript().empty());
-        REQUIRE(!tx->getWitnesses()[0].getVerificationScript().empty());
+        REQUIRE(!tx->getWitnesses()[0]->getInvocationScript().empty());
+        REQUIRE(!tx->getWitnesses()[0]->getVerificationScript().empty());
     }
     
     SECTION("Fail signing with account missing private key") {

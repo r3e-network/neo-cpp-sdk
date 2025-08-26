@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <map>
 #include "neocpp/types/types.hpp"
 #include "neocpp/script/op_code.hpp"
 
@@ -65,6 +66,21 @@ public:
     /// @param parameter The contract parameter
     /// @return Reference to this builder
     ScriptBuilder& pushContractParameter(const ContractParameter& parameter);
+    
+    /// Push contract parameter onto the stack (alias for pushContractParameter)
+    /// @param parameter The contract parameter
+    /// @return Reference to this builder
+    ScriptBuilder& pushParam(const ContractParameter& parameter);
+    
+    /// Push array of contract parameters onto the stack
+    /// @param array The array of contract parameters
+    /// @return Reference to this builder
+    ScriptBuilder& pushArray(const std::vector<ContractParameter>& array);
+    
+    /// Push map of contract parameters onto the stack
+    /// @param paramMap The map of contract parameters
+    /// @return Reference to this builder
+    ScriptBuilder& pushMap(const std::map<ContractParameter, ContractParameter>& paramMap);
     
     /// Call a contract
     /// @param scriptHash The contract script hash

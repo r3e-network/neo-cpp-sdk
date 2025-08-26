@@ -20,6 +20,9 @@ enum class TransactionAttributeType : uint8_t {
     CONFLICTS = 0x21
 };
 
+// Forward declaration
+class HighPriorityAttribute;
+
 /// Base class for transaction attributes
 class TransactionAttribute : public NeoSerializable {
 public:
@@ -33,6 +36,9 @@ public:
     
     /// Create from type and reader
     static SharedPtr<TransactionAttribute> deserialize(BinaryReader& reader);
+    
+    /// Create a high priority attribute
+    static SharedPtr<TransactionAttribute> highPriority();
     
 protected:
     /// Serialize the attribute data (without type byte)
@@ -53,6 +59,12 @@ public:
 protected:
     void serializeWithoutType(BinaryWriter& writer) const override {
         // No additional data for high priority
+    }
+    
+public:
+    /// Create a high priority attribute
+    static SharedPtr<TransactionAttribute> highPriority() {
+        return std::make_shared<HighPriorityAttribute>();
     }
 };
 

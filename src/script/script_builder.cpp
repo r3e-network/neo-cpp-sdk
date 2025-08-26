@@ -6,6 +6,7 @@
 #include "neocpp/exceptions.hpp"
 #include <algorithm>
 #include <cstring>
+#include <map>
 
 namespace neocpp {
 
@@ -107,8 +108,30 @@ ScriptBuilder& ScriptBuilder::pushContractParameter(const ContractParameter& par
     }
 }
 
-ScriptBuilder& ScriptBuilder::callContract(const Hash160& scriptHash, const std::string& method, 
-                                          const std::vector<ContractParameter>& parameters) {
+ScriptBuilder& ScriptBuilder::pushParam(const ContractParameter& parameter) {
+    return pushContractParameter(parameter);
+}
+
+ScriptBuilder& ScriptBuilder::pushArray(const std::vector<ContractParameter>& array) {
+    if (array.empty()) {
+        return emit(OpCode::NEWARRAY0);
+    }
+    
+    for (const auto& item : array) {
+        pushContractParameter(item);
+    }
+    return pushInteger(array.size()).emit(OpCode::PACK);
+}
+
+ScriptBuilder& ScriptBuilder::pushMap(const std::map<ContractParameter, ContractParameter>& paramMap) {
+    for (const auto& [key, value] : paramMap) {
+        pushContractParameter(key);
+        pushContractParameter(value);
+    }
+    return pushInteger(paramMap.size()).emit(OpCode::PACKMAP);
+}
+
+ScriptBuilder& ScriptBuilder::callContract(const Hash160& scriptHash, const std::string& method, const std::vector<ContractParameter>& parameters) {
     // Push parameters in reverse order
     for (auto it = parameters.rbegin(); it != parameters.rend(); ++it) {
         pushContractParameter(*it);

@@ -193,7 +193,7 @@ std::string ECPublicKey::toHex() const {
     return point_.toHex();
 }
 
-bool ECPublicKey::verify(const Bytes& message, const ECDSASignature& signature) const {
+bool ECPublicKey::verify(const Bytes& message, const SharedPtr<ECDSASignature>& signature) const {
     EC_KEY* eckey = EC_KEY_new_by_curve_name(NID_secp256k1);
     if (!eckey) {
         return false;
@@ -214,7 +214,7 @@ bool ECPublicKey::verify(const Bytes& message, const ECDSASignature& signature) 
     EC_POINT_free(pub_point);
     
     // Parse signature
-    Bytes sigBytes = signature.getBytes();
+    Bytes sigBytes = signature->getBytes();
     ECDSA_SIG* sig = ECDSA_SIG_new();
     if (!sig) {
         EC_KEY_free(eckey);
@@ -248,17 +248,7 @@ std::string ECPublicKey::getAddress() const {
     return AddressUtils::scriptHashToAddress(getScriptHash());
 }
 
-bool ECPublicKey::operator==(const ECPublicKey& other) const {
-    return point_ == other.point_;
-}
-
-bool ECPublicKey::operator!=(const ECPublicKey& other) const {
-    return !(*this == other);
-}
-
-bool ECPublicKey::operator<(const ECPublicKey& other) const {
-    return point_ < other.point_;
-}
+// Comparison operators are already defined in the header
 
 // ECKeyPair implementation
 

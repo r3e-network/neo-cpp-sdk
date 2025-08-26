@@ -27,4 +27,12 @@ Bytes AccountSigner::sign(const Bytes& message) const {
     return account_->sign(message);
 }
 
+SharedPtr<AccountSigner> AccountSigner::none(const SharedPtr<Account>& account) {
+    return std::make_shared<AccountSigner>(account, WitnessScope::NONE);
+}
+
+SharedPtr<AccountSigner> AccountSigner::calledByEntry(const SharedPtr<Account>& account) {
+    return std::make_shared<AccountSigner>(account, WitnessScope::CALLED_BY_ENTRY);
+}
+
 } // namespace neocpp

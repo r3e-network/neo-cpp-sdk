@@ -10,33 +10,41 @@ void TransactionAttribute::serialize(BinaryWriter& writer) const {
     serializeWithoutType(writer);
 }
 
+SharedPtr<TransactionAttribute> TransactionAttribute::highPriority() {
+    return std::make_shared<HighPriorityAttribute>();
+}
+
 SharedPtr<TransactionAttribute> TransactionAttribute::deserialize(BinaryReader& reader) {
-    uint8_t type = reader.readUInt8();
+    auto type = static_cast<TransactionAttributeType>(reader.readUInt8());
     
-    switch (static_cast<TransactionAttributeType>(type)) {
+    SharedPtr<TransactionAttribute> attribute;
+    
+    switch (type) {
         case TransactionAttributeType::HIGH_PRIORITY:
-            return std::make_shared<HighPriorityAttribute>();
-            
+            attribute = std::make_shared<HighPriorityAttribute>();
+            break;
         case TransactionAttributeType::ORACLE_RESPONSE: {
             uint64_t id = reader.readUInt64();
             uint8_t code = reader.readUInt8();
             Bytes result = reader.readVarBytes();
-            return std::make_shared<OracleResponseAttribute>(id, code, result);
+            attribute = std::make_shared<OracleResponseAttribute>(id, code, result);
+            break;
         }
-        
         case TransactionAttributeType::NOT_VALID_BEFORE: {
             uint32_t height = reader.readUInt32();
-            return std::make_shared<NotValidBeforeAttribute>(height);
+            attribute = std::make_shared<NotValidBeforeAttribute>(height);
+            break;
         }
-        
         case TransactionAttributeType::CONFLICTS: {
             Hash256 hash = Hash256::deserialize(reader);
-            return std::make_shared<ConflictsAttribute>(hash);
+            attribute = std::make_shared<ConflictsAttribute>(hash);
+            break;
         }
-        
         default:
-            throw DeserializationException("Unknown transaction attribute type: " + std::to_string(type));
+            throw DeserializationException("Unknown transaction attribute type: " + std::to_string(static_cast<int>(type)));
     }
+    
+    return attribute;
 }
 
 size_t OracleResponseAttribute::getSize() const {

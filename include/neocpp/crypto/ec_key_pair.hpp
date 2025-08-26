@@ -79,6 +79,10 @@ public:
     /// @return The compressed encoded public key
     Bytes getEncoded() const;
     
+    /// Get the encoded bytes (compressed) - alias for getEncoded()
+    /// @return The compressed encoded public key
+    Bytes getEncodedCompressed() const { return getEncoded(); }
+    
     /// Get the encoded bytes (uncompressed)
     /// @return The uncompressed encoded public key
     Bytes getEncodedUncompressed() const;
@@ -91,20 +95,70 @@ public:
     /// @param message The message that was signed
     /// @param signature The signature to verify
     /// @return True if signature is valid
-    bool verify(const Bytes& message, const ECDSASignature& signature) const;
+    bool verify(const Bytes& message, const SharedPtr<ECDSASignature>& signature) const;
     
     /// Get the script hash for this public key
     /// @return The script hash
     Bytes getScriptHash() const;
     
     /// Get the address for this public key
+    
+    /// Get the size of the encoded public key
+    /// @return The size in bytes
+    size_t size() const { return getEncoded().size(); }
+    
+    /// Convert to byte array
+    /// @return The encoded bytes
+    Bytes toArray() const { return getEncoded(); }
+    
+    /// Create from byte array
+    /// @param data The encoded bytes
+    /// @return The public key
+    static SharedPtr<ECPublicKey> from(const Bytes& data);
+    
+    /// Equality operator
+    /// @param other The other public key
+    /// @return True if equal
+    bool operator==(const ECPublicKey& other) const {
+        return point_ == other.point_;
+    }
+    
+    /// Inequality operator
+    /// @param other The other public key
+    /// @return True if not equal
+    bool operator!=(const ECPublicKey& other) const {
+        return !(*this == other);
+    }
+    
+    /// Less than operator
+    /// @param other The other public key
+    /// @return True if this key is less than other
+    bool operator<(const ECPublicKey& other) const {
+        return point_ < other.point_;
+    }
+    
+    /// Greater than operator
+    /// @param other The other public key
+    /// @return True if this key is greater than other
+    bool operator>(const ECPublicKey& other) const {
+        return other < *this;
+    }
+    
+    /// Less than or equal operator
+    /// @param other The other public key
+    /// @return True if this key is less than or equal to other
+    bool operator<=(const ECPublicKey& other) const {
+        return !(other < *this);
+    }
+    
+    /// Greater than or equal operator
+    /// @param other The other public key
+    /// @return True if this key is greater than or equal to other
+    bool operator>=(const ECPublicKey& other) const {
+        return !(*this < other);
+    }
     /// @return The Neo address
     std::string getAddress() const;
-    
-    // Comparison operators
-    bool operator==(const ECPublicKey& other) const;
-    bool operator!=(const ECPublicKey& other) const;
-    bool operator<(const ECPublicKey& other) const;
 };
 
 /// Represents an EC key pair (private and public key)

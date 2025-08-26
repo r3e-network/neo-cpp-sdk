@@ -16,6 +16,16 @@ TEST_CASE("WIF Tests", "[crypto]") {
         const std::string expected = "KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr";
         REQUIRE(wif == expected);
     }
+
+    SECTION("Encode wrongly sized private key throws exception") {
+        // Test with private key that's too short
+        Bytes tooShortPrivateKey(31, 0x00);
+        REQUIRE_THROWS_AS(WIF::encode(tooShortPrivateKey), IllegalArgumentException);
+        
+        // Test with private key that's too long
+        Bytes tooLongPrivateKey(33, 0x00);
+        REQUIRE_THROWS_AS(WIF::encode(tooLongPrivateKey), IllegalArgumentException);
+    }
     
     SECTION("Decode WIF to private key") {
         const std::string wif = "KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr";
@@ -36,10 +46,34 @@ TEST_CASE("WIF Tests", "[crypto]") {
         REQUIRE_FALSE(WIF::isValid("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYn")); // Too short
         REQUIRE_FALSE(WIF::isValid("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnZ")); // Wrong checksum
     }
+
+    SECTION("Invalid WIF with wrong first byte") {
+        // Create a valid WIF and modify the first byte
+        std::string validWif = "KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr";
+        Bytes decoded = Base58::decode(validWif);
+        REQUIRE(!decoded.empty());
+        decoded[0] = 0x81; // Change version byte from 0x80 to 0x81
+        std::string invalidWif = Base58::encode(decoded);
+        REQUIRE_FALSE(WIF::isValid(invalidWif));
+        REQUIRE_THROWS_AS(WIF::decode(invalidWif), CryptoException);
+    }
+
+    SECTION("Invalid WIF with wrong compression flag") {
+        // Create a valid WIF and modify the compression flag
+        std::string validWif = "KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr";
+        Bytes decoded = Base58::decode(validWif);
+        REQUIRE(!decoded.empty());
+        decoded[33] = 0x00; // Change compression flag from 0x01 to 0x00
+        std::string invalidWif = Base58::encode(decoded);
+        REQUIRE_FALSE(WIF::isValid(invalidWif));
+        REQUIRE_THROWS_AS(WIF::decode(invalidWif), CryptoException);
+    }
     
     SECTION("Decode invalid WIF throws exception") {
         REQUIRE_THROWS_AS(WIF::decode("InvalidWIF"), CryptoException);
         REQUIRE_THROWS_AS(WIF::decode(""), CryptoException);
+        REQUIRE_THROWS_AS(WIF::decode("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYn"), CryptoException); // Too short
+        REQUIRE_THROWS_AS(WIF::decode("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnZ"), CryptoException); // Wrong checksum
     }
     
     SECTION("Round trip encoding and decoding") {

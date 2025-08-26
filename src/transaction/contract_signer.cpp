@@ -10,4 +10,8 @@ ContractSigner::ContractSigner(const Hash160& contractHash, const Bytes& verific
     : Signer(contractHash, scopes), verificationScript_(verificationScript) {
 }
 
+SharedPtr<ContractSigner> ContractSigner::calledByEntry(const Hash160& contractHash) {
+    return std::make_shared<ContractSigner>(contractHash, WitnessScope::CALLED_BY_ENTRY);
+}
+
 } // namespace neocpp

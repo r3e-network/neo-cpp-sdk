@@ -11,7 +11,7 @@ const uint8_t WIF::COMPRESSED_FLAG;
 
 std::string WIF::encode(const Bytes& privateKey) {
     if (privateKey.size() != NeoConstants::PRIVATE_KEY_SIZE) {
-        throw IllegalArgumentException("Private key must be 32 bytes");
+        throw IllegalArgumentException("Given key is not of expected length (32 bytes)");
     }
     
     Bytes data;
@@ -25,23 +25,25 @@ std::string WIF::encode(const Bytes& privateKey) {
 Bytes WIF::decode(const std::string& wif) {
     Bytes decoded = Base58::decodeCheck(wif);
     
-    if (decoded.empty() || decoded.size() != 34 || decoded[0] != WIF_VERSION || decoded[33] != COMPRESSED_FLAG) {
-        throw CryptoException("Invalid WIF string");
+    if (decoded.empty() || decoded.size() != NeoConstants::PRIVATE_KEY_SIZE + 2 || decoded[0] != WIF_VERSION || decoded[NeoConstants::PRIVATE_KEY_SIZE + 1] != COMPRESSED_FLAG) {
+        throw CryptoException("Incorrect WIF format.");
     }
     
-    return Bytes(decoded.begin() + 1, decoded.begin() + 33);
+    return Bytes(decoded.begin() + 1, decoded.begin() + 1 + NeoConstants::PRIVATE_KEY_SIZE);
 }
 
 bool WIF::isValid(const std::string& wif) {
-    if (wif.empty() || wif.length() != 52) {
+    // We don't check the exact length since Base58 encoding can vary slightly
+    // due to leading zeros
+    if (wif.empty()) {
         return false;
     }
     
     Bytes decoded = Base58::decodeCheck(wif);
     return !decoded.empty() && 
-           decoded.size() == 34 && 
+           decoded.size() == NeoConstants::PRIVATE_KEY_SIZE + 2 && 
            decoded[0] == WIF_VERSION && 
-           decoded[33] == COMPRESSED_FLAG;
+           decoded[NeoConstants::PRIVATE_KEY_SIZE + 1] == COMPRESSED_FLAG;
 }
 
 } // namespace neocpp

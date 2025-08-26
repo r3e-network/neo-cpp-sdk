@@ -116,11 +116,11 @@ TEST_CASE("ECKeyPair Tests", "[crypto]") {
         auto signature = keyPair.sign(message);
         
         REQUIRE(signature != nullptr);
-        REQUIRE(keyPair.getPublicKey()->verify(message, *signature));
+        REQUIRE(keyPair.getPublicKey()->verify(message, signature));
         
         // Verify with wrong message should fail
         Bytes wrongMessage = {0x01, 0x02, 0x03, 0x04, 0x06};
-        REQUIRE_FALSE(keyPair.getPublicKey()->verify(wrongMessage, *signature));
+        REQUIRE_FALSE(keyPair.getPublicKey()->verify(wrongMessage, signature));
     }
     
     SECTION("Key pair equality") {

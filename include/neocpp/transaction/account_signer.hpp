@@ -35,6 +35,16 @@ public:
     /// @param message The message to sign
     /// @return The signature
     Bytes sign(const Bytes& message) const;
+    
+    /// Creates a signer for the given account with no witness scope
+    /// @param account The signer account
+    /// @return The signer
+    static SharedPtr<AccountSigner> none(const SharedPtr<Account>& account);
+    
+    /// Creates a signer for the given account with calledByEntry scope
+    /// @param account The signer account
+    /// @return The signer
+    static SharedPtr<AccountSigner> calledByEntry(const SharedPtr<Account>& account);
 };
 
 } // namespace neocpp

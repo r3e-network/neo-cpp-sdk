@@ -14,6 +14,7 @@ class Witness;
 class TransactionAttribute;
 class BinaryWriter;
 class BinaryReader;
+class Account;
 
 /// Represents a Neo transaction
 class Transaction : public NeoSerializable {
@@ -45,6 +46,7 @@ public:
     int64_t getNetworkFee() const { return networkFee_; }
     uint32_t getValidUntilBlock() const { return validUntilBlock_; }
     const std::vector<SharedPtr<Signer>>& getSigners() const { return signers_; }
+    void clearSigners() { signers_.clear(); }
     const std::vector<SharedPtr<TransactionAttribute>>& getAttributes() const { return attributes_; }
     const Bytes& getScript() const { return script_; }
     const std::vector<SharedPtr<Witness>>& getWitnesses() const { return witnesses_; }
@@ -65,6 +67,10 @@ public:
     
     /// Add a witness
     void addWitness(const SharedPtr<Witness>& witness);
+    
+    /// Sign the transaction with an account
+    /// @param account The account to sign with
+    void sign(const SharedPtr<Account>& account);
     
     /// Get transaction hash
     /// @return The transaction hash

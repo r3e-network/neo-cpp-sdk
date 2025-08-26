@@ -30,6 +30,11 @@ public:
     
     /// Set the verification script
     void setVerificationScript(const Bytes& script) { verificationScript_ = script; }
+    
+    /// Creates a signer for the given contract with calledByEntry scope
+    /// @param contractHash The contract script hash
+    /// @return The signer
+    static SharedPtr<ContractSigner> calledByEntry(const Hash160& contractHash);
 };
 
 } // namespace neocpp

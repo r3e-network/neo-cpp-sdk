@@ -113,8 +113,8 @@ bool Wallet::signTransaction(const SharedPtr<Transaction>& transaction) {
         auto account = getAccount(signer->getAccount());
         if (account && !account->isLocked()) {
             // Sign the transaction hash
-            Bytes txHash = transaction->getHashData();
-            Bytes signature = account->sign(txHash);
+            Bytes txHash = transaction->getHash().toArray();
+            Bytes signature = account->signHash(txHash);
 
             // Create witness
             auto witness = Witness::fromSignature(signature, account->getKeyPair()->getPublicKey()->getEncoded());

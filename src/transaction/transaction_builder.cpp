@@ -334,7 +334,7 @@ void TransactionBuilder::addWitnessForAccount(const SharedPtr<Account>& account)
     auto txHash = transaction_->getHash();
 
     // Sign the transaction hash
-    auto signature = account->sign(txHash.toArray());
+    auto signature = account->signHash(txHash.toArray());
 
     // Create witness
     auto witness = std::make_shared<Witness>();

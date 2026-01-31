@@ -109,6 +109,18 @@ Bytes Account::sign(const Bytes& message) const {
     auto signature = keyPair_->sign(message);
     return signature->getBytes();
 } // namespace neocpp
+Bytes Account::signHash(const Bytes& hash) const {
+    if (isLocked_) {
+        throw WalletException("Account is locked");
+    }
+
+    if (!keyPair_) {
+        throw WalletException("Cannot sign with multi-signature account");
+    }
+
+    auto signature = keyPair_->getPrivateKey()->signHash(hash);
+    return signature->getBytes();
+} // namespace neocpp
 bool Account::verify(const Bytes& message, const Bytes& signature) const {
     if (!keyPair_) {
         return false;

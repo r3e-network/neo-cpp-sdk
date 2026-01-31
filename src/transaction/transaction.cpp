@@ -46,7 +46,8 @@ void Transaction::sign(const SharedPtr<Account>& account) {
     Hash256 hash = getHash();
 
     // Sign the hash with the account's key pair
-    SharedPtr<ECDSASignature> signature = account->getKeyPair()->sign(hash.toArray());
+    auto signatureBytes = account->signHash(hash.toArray());
+    auto signature = std::make_shared<ECDSASignature>(signatureBytes);
 
     // Create a witness from the signature and public key
     SharedPtr<Witness> witness = Witness::fromSignature(signature->getBytes(), account->getKeyPair()->getPublicKey()->getEncoded());

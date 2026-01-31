@@ -4,6 +4,7 @@
 #include "neocpp/transaction/witness.hpp"
 #include "neocpp/crypto/ec_key_pair.hpp"
 #include "neocpp/crypto/ecdsa_signature.hpp"
+#include "neocpp/wallet/account.hpp"
 #include "neocpp/script/script_builder.hpp"
 #include "neocpp/serialization/binary_writer.hpp"
 #include "neocpp/serialization/binary_reader.hpp"
@@ -180,6 +181,33 @@ TEST_CASE("Transaction Tests", "[transaction]") {
         REQUIRE(tx.getWitnesses().size() == 1);
         REQUIRE(!tx.getWitnesses()[0]->getInvocationScript().empty());
         REQUIRE(!tx.getWitnesses()[0]->getVerificationScript().empty());
+    }
+
+    SECTION("Transaction signatures use digest") {
+        Transaction tx;
+        tx.setVersion(0);
+        tx.setNonce(12345678);
+        tx.setSystemFee(100000);
+        tx.setNetworkFee(200000);
+        tx.setValidUntilBlock(1000000);
+
+        auto account = Account::create();
+        auto signer = std::make_shared<Signer>(account->getScriptHash(), WitnessScope::CALLED_BY_ENTRY);
+        tx.addSigner(signer);
+
+        tx.sign(account);
+
+        REQUIRE(tx.getWitnesses().size() == 1);
+
+        const auto& invocation = tx.getWitnesses()[0]->getInvocationScript();
+        REQUIRE(invocation.size() == 65);
+        REQUIRE(invocation[0] == 64);
+
+        Bytes sigBytes(invocation.begin() + 1, invocation.begin() + 65);
+        auto sig = std::make_shared<ECDSASignature>(sigBytes);
+        auto pubKey = account->getKeyPair()->getPublicKey();
+
+        REQUIRE(pubKey->verifyHash(tx.getHash().toArray(), sig));
     }
     
     SECTION("Transaction size calculation") {

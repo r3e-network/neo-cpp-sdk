@@ -94,6 +94,11 @@ public:
     /// @return The signature
     Bytes sign(const Bytes& message) const;
 
+    /// Sign a 32-byte hash directly (no additional hashing)
+    /// @param hash The hash to sign
+    /// @return The signature
+    Bytes signHash(const Bytes& hash) const;
+
     /// Verify a signature
     /// @param message The message that was signed
     /// @param signature The signature to verify

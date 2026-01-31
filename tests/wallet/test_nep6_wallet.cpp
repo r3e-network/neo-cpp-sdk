@@ -110,6 +110,24 @@ TEST_CASE("Nep6Wallet Tests", "[wallet]") {
         REQUIRE(walletJson["tokens"].size() == 1);
         REQUIRE(walletJson["tokens"][0]["symbol"] == "TEST");
     }
+
+    SECTION("NEP-6 JSON omits plaintext WIF by default") {
+        Nep6Wallet wallet("WIF Test", "1.0");
+
+        wallet.createAccount("Account 1");
+
+        json walletJson = wallet.toJson();
+        REQUIRE(walletJson["accounts"][0]["key"].is_null());
+    }
+
+    SECTION("NEP-6 JSON can include plaintext WIF when requested") {
+        Nep6Wallet wallet("WIF Test", "1.0");
+
+        wallet.createAccount("Account 1");
+
+        json walletJson = wallet.toJson(true);
+        REQUIRE(walletJson["accounts"][0]["key"].is_string());
+    }
     
     SECTION("Create wallet from JSON") {
         json walletJson = {

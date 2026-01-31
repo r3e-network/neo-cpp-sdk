@@ -12,7 +12,7 @@ Nep6Wallet::Nep6Wallet(const std::string& name, const std::string& version)
 }
 
 void Nep6Wallet::save(const std::string& filepath, const std::string& password) const {
-    nlohmann::json json = toJson();
+    nlohmann::json json = toJson(false);
 
     if (!password.empty() && json.contains("accounts")) {
         const auto& accounts = getAccounts();
@@ -43,6 +43,10 @@ void Nep6Wallet::save(const std::string& filepath, const std::string& password) 
 }
 
 nlohmann::json Nep6Wallet::toJson() const {
+    return toJson(false);
+}
+
+nlohmann::json Nep6Wallet::toJson(bool includePlaintextWif) const {
     nlohmann::json json;
     json["name"] = getName();
     json["version"] = getVersion();
@@ -56,7 +60,7 @@ nlohmann::json Nep6Wallet::toJson() const {
         accountJson["lock"] = account->isLocked();
         
         // Add key if account has private key and is not locked
-        if (!account->isLocked() && account->getKeyPair()) {
+        if (includePlaintextWif && !account->isLocked() && account->getKeyPair()) {
             try {
                 accountJson["key"] = account->exportWIF();
             } catch (const std::exception& e) {

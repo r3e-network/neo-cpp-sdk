@@ -40,6 +40,7 @@ public:
     /// Convert wallet to NEP-6 JSON
     /// @return The NEP-6 JSON representation
     nlohmann::json toJson() const;
+    nlohmann::json toJson(bool includePlaintextWif) const;
 
     /// Load wallet from NEP-6 JSON
     /// @param json The NEP-6 JSON

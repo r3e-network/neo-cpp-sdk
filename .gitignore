@@ -108,3 +108,4 @@ tests/*_test
 .env
 .env.local
 *.local
+.worktrees/

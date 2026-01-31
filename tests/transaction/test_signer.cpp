@@ -263,7 +263,9 @@ TEST_CASE("Signer Tests", "[transaction]") {
         nlohmann::json json = signer.toJson();
         
         REQUIRE(json["account"] == account.toString());
-        REQUIRE(json["scopes"] == "CustomContracts");
+        REQUIRE(json["scopes"].is_array());
+        REQUIRE(json["scopes"].size() == 1);
+        REQUIRE(json["scopes"][0] == "CustomContracts");
         REQUIRE(json["allowedcontracts"].size() == 1);
         REQUIRE(json["allowedcontracts"][0] == contract.toString());
     }
@@ -279,7 +281,9 @@ TEST_CASE("Signer Tests", "[transaction]") {
         nlohmann::json json = signer.toJson();
         
         REQUIRE(json["account"] == account.toString());
-        REQUIRE(json["scopes"] == "CustomGroups");
+        REQUIRE(json["scopes"].is_array());
+        REQUIRE(json["scopes"].size() == 1);
+        REQUIRE(json["scopes"][0] == "CustomGroups");
         REQUIRE(json["allowedgroups"].size() == 1);
         REQUIRE(json["allowedgroups"][0] == Hex::encode(group));
     }

@@ -272,11 +272,18 @@ TEST_CASE("Transaction Tests", "[transaction]") {
         REQUIRE(signersJson.is_array());
         REQUIRE(signersJson.size() == 3);
         REQUIRE(signersJson[0]["account"] == account1.toString());
-        REQUIRE(signersJson[0]["scopes"] == "None");
+        REQUIRE(signersJson[0]["scopes"].is_array());
+        REQUIRE(signersJson[0]["scopes"].size() == 1);
+        REQUIRE(signersJson[0]["scopes"][0] == "None");
         REQUIRE(signersJson[1]["account"] == account2.toString());
-        REQUIRE(signersJson[1]["scopes"] == "CustomGroups");
+        REQUIRE(signersJson[1]["scopes"].is_array());
+        REQUIRE(signersJson[1]["scopes"].size() == 1);
+        REQUIRE(signersJson[1]["scopes"][0] == "CustomGroups");
         REQUIRE(signersJson[2]["account"] == account3.toString());
-        REQUIRE(signersJson[2]["scopes"] == "CalledByEntry, CustomContracts");
+        REQUIRE(signersJson[2]["scopes"].is_array());
+        REQUIRE(signersJson[2]["scopes"].size() == 2);
+        REQUIRE(signersJson[2]["scopes"][0] == "CalledByEntry");
+        REQUIRE(signersJson[2]["scopes"][1] == "CustomContracts");
     }
 
     SECTION("Fee verification script matches standard verification script") {

@@ -121,7 +121,11 @@ bool Signer::operator!=(const Signer& other) const {
 nlohmann::json Signer::toJson() const {
     nlohmann::json json;
     json["account"] = account_.toString();
-    json["scopes"] = WitnessScopeHelper::toJsonString(scopes_);
+    nlohmann::json scopesJson = nlohmann::json::array();
+    for (const auto& scope : WitnessScopeHelper::toJsonArray(scopes_)) {
+        scopesJson.push_back(scope);
+    }
+    json["scopes"] = scopesJson;
 
     if (!allowedContracts_.empty()) {
         nlohmann::json contracts = nlohmann::json::array();

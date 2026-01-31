@@ -99,6 +99,18 @@ public:
         return result;
     }
 
+    /// Convert enum to JSON array of strings
+    /// Handles combined scopes by returning an array of values
+    static std::vector<std::string> toJsonArray(WitnessScope scope) {
+        auto scopes = extractCombinedScopes(static_cast<uint8_t>(scope));
+        std::vector<std::string> result;
+        result.reserve(scopes.size());
+        for (const auto& entry : scopes) {
+            result.push_back(toJsonString(entry));
+        }
+        return result;
+    }
+
     /// Convert JSON string value to enum
     static WitnessScope fromJsonString(const std::string& value) {
         // Check for simple cases first

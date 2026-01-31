@@ -657,9 +657,13 @@ bool TransactionBuilder::canSendCoverFees(int64_t fees) {
 nlohmann::json TransactionBuilder::buildSignersJson(const std::vector<SharedPtr<Signer>>& signers) {
     nlohmann::json signersJson = nlohmann::json::array();
     for (const auto& signer : signers) {
+        nlohmann::json scopesJson = nlohmann::json::array();
+        for (const auto& scope : WitnessScopeHelper::toJsonArray(signer->getScopes())) {
+            scopesJson.push_back(scope);
+        }
         signersJson.push_back({
             {"account", signer->getAccount().toString()},
-            {"scopes", WitnessScopeHelper::toJsonString(signer->getScopes())}
+            {"scopes", scopesJson}
         });
     }
     return signersJson;

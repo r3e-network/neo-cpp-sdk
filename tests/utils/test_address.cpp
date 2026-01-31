@@ -55,7 +55,7 @@ TEST_CASE("AddressUtils Tests", "[utils]") {
         Bytes verificationScript = ScriptBuilder::buildVerificationScript(keyPair.getPublicKey());
         
         // Hash the verification script
-        Bytes scriptHash = Hash::hash160(verificationScript);
+        Bytes scriptHash = HashUtils::sha256ThenRipemd160(verificationScript);
         
         // Create address
         std::string address = AddressUtils::scriptHashToAddress(scriptHash);
@@ -71,7 +71,7 @@ TEST_CASE("AddressUtils Tests", "[utils]") {
         Bytes verificationScript = ScriptBuilder::buildVerificationScript(keyPair.getPublicKey());
         
         // Hash the verification script
-        Bytes scriptHash = Hash::hash160(verificationScript);
+        Bytes scriptHash = HashUtils::sha256ThenRipemd160(verificationScript);
         std::string address = AddressUtils::scriptHashToAddress(scriptHash);
         
         REQUIRE(!address.empty());
@@ -122,7 +122,7 @@ TEST_CASE("AddressUtils Tests", "[utils]") {
         Bytes verificationScript = ScriptBuilder::buildVerificationScript(publicKeys, 2);
         
         // Hash the verification script
-        Bytes scriptHash = Hash::hash160(verificationScript);
+        Bytes scriptHash = HashUtils::sha256ThenRipemd160(verificationScript);
         std::string multiSigAddress = AddressUtils::scriptHashToAddress(scriptHash);
         
         REQUIRE(!multiSigAddress.empty());

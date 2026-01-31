@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/nep17_contract.hpp"
 
 namespace neocpp {

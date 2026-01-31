@@ -2,6 +2,7 @@
 #include "neocpp/crypto/wif.hpp"
 #include "neocpp/crypto/ec_key_pair.hpp"
 #include "neocpp/utils/hex.hpp"
+#include "neocpp/utils/base58.hpp"
 #include "neocpp/exceptions.hpp"
 
 using namespace neocpp;

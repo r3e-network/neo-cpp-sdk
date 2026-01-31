@@ -39,7 +39,7 @@ int main() {
         printHex("Signature", signature->getBytes());
         
         // Verify signature
-        bool valid = publicKey->verify(messageHash, *signature);
+        bool valid = publicKey->verify(messageHash, signature);
         std::cout << "Signature valid: " << (valid ? "true" : "false") << std::endl;
         
         // Test NEP-2 encryption

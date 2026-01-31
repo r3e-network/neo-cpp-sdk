@@ -5,6 +5,7 @@
 #include "neocpp/transaction/transaction_builder.hpp"
 #include "neocpp/utils/address.hpp"
 #include "neocpp/exceptions.hpp"
+#include "neocpp/logger.hpp"
 
 namespace neocpp {
 
@@ -130,7 +131,11 @@ bool NonFungibleToken::isDivisible() {
         // Try to call decimals - divisible NFTs have decimals > 0
         auto result = invokeFunction("decimals");
         return result["stack"][0]["value"].get<int>() > 0;
+    } catch (const std::exception& e) {
+        LOG_DEBUG(std::string("isDivisible check failed: ") + e.what());
+        return false;
     } catch (...) {
+        LOG_DEBUG("isDivisible check failed with unknown error");
         return false;
     }
 }
@@ -180,7 +185,11 @@ void NonFungibleToken::loadMetadata() {
         try {
             auto decimalsResult = invokeFunction("decimals");
             decimals_ = decimalsResult["stack"][0]["value"].get<int>();
+        } catch (const std::exception& e) {
+            LOG_DEBUG(std::string("Failed to get decimals, defaulting to 0: ") + e.what());
+            decimals_ = 0; // Default for NFTs
         } catch (...) {
+            LOG_DEBUG("Failed to get decimals with unknown error, defaulting to 0");
             decimals_ = 0; // Default for NFTs
         }
         

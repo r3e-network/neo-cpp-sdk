@@ -1,3 +1,4 @@
+
 #include "neocpp/types/gas_token.hpp"
 
 namespace neocpp {

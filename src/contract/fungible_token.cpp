@@ -5,6 +5,7 @@
 #include "neocpp/transaction/transaction_builder.hpp"
 #include "neocpp/utils/address.hpp"
 #include "neocpp/exceptions.hpp"
+#include "neocpp/logger.hpp"
 #include <cmath>
 
 namespace neocpp {

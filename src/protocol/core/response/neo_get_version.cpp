@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/neo_get_version.hpp"
 
 namespace neocpp {

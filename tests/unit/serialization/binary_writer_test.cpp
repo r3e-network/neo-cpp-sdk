@@ -3,6 +3,7 @@
 #include "neocpp/serialization/binary_writer.hpp"
 #include "neocpp/utils/hex.hpp"
 #include <sstream>
+#include <array>
 
 using namespace neocpp;
 

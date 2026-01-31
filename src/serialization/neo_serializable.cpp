@@ -1,3 +1,4 @@
+
 #include "neocpp/serialization/neo_serializable.hpp"
 #include "neocpp/serialization/binary_writer.hpp"
 
@@ -7,6 +8,5 @@ Bytes NeoSerializable::toArray() const {
     BinaryWriter writer;
     serialize(writer);
     return writer.toArray();
-}
-
+} // namespace neocpp
 } // namespace neocpp

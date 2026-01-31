@@ -7,7 +7,7 @@ check_required_components(NeoCpp)
 # Find dependencies
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(CURL REQUIRED)
+find_package(CURL QUIET)
 
 # Provide the path to nlohmann/json
 find_package(nlohmann_json QUIET)

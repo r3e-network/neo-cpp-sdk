@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/contract_state.hpp"
 
 namespace neocpp {

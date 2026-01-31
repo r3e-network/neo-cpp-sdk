@@ -14,18 +14,35 @@ namespace neocpp {
 class StackItem;
 using StackItemPtr = std::shared_ptr<StackItem>;
 
+/// Version info struct
+struct VersionInfo {
+    int tcpPort = 0;
+    int wsPort = 0;
+    uint32_t nonce = 0;
+    std::string userAgent;
+};
+
 /// Version response
 class NeoGetVersionResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
-    int getTcpPort() const { return tcpPort_; }
-    int getWsPort() const { return wsPort_; }
-    uint32_t getNonce() const { return nonce_; }
+    [[nodiscard]] int getTcpPort() const { return tcpPort_; }
+    [[nodiscard]] int getWsPort() const { return wsPort_; }
+    [[nodiscard]] uint32_t getNonce() const { return nonce_; }
     const std::string& getUserAgent() const { return userAgent_; }
     const nlohmann::json& getProtocol() const { return protocol_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
     
+    /// Get version info as a struct
+    VersionInfo getVersion() const {
+        VersionInfo ver;
+        ver.tcpPort = tcpPort_;
+        ver.wsPort = wsPort_;
+        ver.nonce = nonce_;
+        ver.userAgent = userAgent_;
+        return ver;
+    }
+
 private:
     int tcpPort_ = 0;
     int wsPort_ = 0;
@@ -39,12 +56,12 @@ private:
 class NeoGetPeersResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
+
     const nlohmann::json& getConnected() const { return connected_; }
     const nlohmann::json& getUnconnected() const { return unconnected_; }
     const nlohmann::json& getBad() const { return bad_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
-    
+
 private:
     nlohmann::json connected_;
     nlohmann::json unconnected_;
@@ -56,22 +73,22 @@ private:
 class NeoGetBlockResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
+
     const Hash256& getHash() const { return hash_; }
-    int getSize() const { return size_; }
-    int getVersion() const { return version_; }
+    [[nodiscard]] int getSize() const { return size_; }
+    [[nodiscard]] int getVersion() const { return version_; }
     const Hash256& getPreviousBlockHash() const { return previousBlockHash_; }
     const Hash256& getMerkleRoot() const { return merkleRoot_; }
-    uint64_t getTime() const { return time_; }
-    uint32_t getIndex() const { return index_; }
+    [[nodiscard]] uint64_t getTime() const { return time_; }
+    [[nodiscard]] uint32_t getIndex() const { return index_; }
     const std::string& getNextConsensus() const { return nextConsensus_; }
     const nlohmann::json& getWitnesses() const { return witnesses_; }
     const nlohmann::json& getTransactions() const { return transactions_; }
-    int getConfirmations() const { return confirmations_; }
+    [[nodiscard]] int getConfirmations() const { return confirmations_; }
     const Hash256& getNextBlockHash() const { return nextBlockHash_; }
     bool hasNextBlockHash() const { return hasNextBlockHash_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
-    
+
 private:
     Hash256 hash_;
     int size_ = 0;
@@ -93,24 +110,24 @@ private:
 class NeoGetRawTransactionResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
+
     const Hash256& getHash() const { return hash_; }
-    int getSize() const { return size_; }
-    int getVersion() const { return version_; }
-    uint32_t getNonce() const { return nonce_; }
+    [[nodiscard]] int getSize() const { return size_; }
+    [[nodiscard]] int getVersion() const { return version_; }
+    [[nodiscard]] uint32_t getNonce() const { return nonce_; }
     const std::string& getSender() const { return sender_; }
     const std::string& getSysfee() const { return sysfee_; }
     const std::string& getNetfee() const { return netfee_; }
-    uint32_t getValidUntilBlock() const { return validUntilBlock_; }
+    [[nodiscard]] uint32_t getValidUntilBlock() const { return validUntilBlock_; }
     const nlohmann::json& getSigners() const { return signers_; }
     const nlohmann::json& getAttributes() const { return attributes_; }
     const nlohmann::json& getWitnesses() const { return witnesses_; }
     const std::string& getScript() const { return script_; }
     const Hash256& getBlockHash() const { return blockHash_; }
-    int getConfirmations() const { return confirmations_; }
-    uint64_t getBlockTime() const { return blockTime_; }
+    [[nodiscard]] int getConfirmations() const { return confirmations_; }
+    [[nodiscard]] uint64_t getBlockTime() const { return blockTime_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
-    
+
 private:
     Hash256 hash_;
     int size_ = 0;
@@ -134,29 +151,48 @@ private:
 class NeoGetApplicationLogResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
+
     const std::string& getTxId() const { return txid_; }
     const nlohmann::json& getExecutions() const { return executions_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
-    
+
 private:
     std::string txid_;
     nlohmann::json executions_;
     nlohmann::json rawJson_;
 };
 
+/// Contract state
+struct ContractState {
+    int id = 0;
+    int updateCounter = 0;
+    Hash160 hash;
+    std::string nef;
+    nlohmann::json manifest;
+};
+
 /// Contract state response
 class NeoGetContractStateResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
-    int getId() const { return id_; }
-    int getUpdateCounter() const { return updateCounter_; }
+    [[nodiscard]] int getId() const { return id_; }
+    [[nodiscard]] int getUpdateCounter() const { return updateCounter_; }
     const Hash160& getHash() const { return hash_; }
     const nlohmann::json& getNef() const { return nef_; }
     const nlohmann::json& getManifest() const { return manifest_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
     
+    /// Get the full contract state
+    ContractState getContractState() const {
+        ContractState state;
+        state.id = id_;
+        state.updateCounter = updateCounter_;
+        state.hash = hash_;
+        state.nef = nef_.dump();
+        state.manifest = manifest_;
+        return state;
+    }
+
 private:
     int id_ = 0;
     int updateCounter_ = 0;
@@ -177,11 +213,11 @@ struct NeoNep17Balance {
 class NeoGetNep17BalancesResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
+
     const std::string& getAddress() const { return address_; }
     const std::vector<NeoNep17Balance>& getBalances() const { return balances_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
-    
+
 private:
     std::string address_;
     std::vector<NeoNep17Balance> balances_;
@@ -192,7 +228,7 @@ private:
 class NeoInvokeResultResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
+
     const std::string& getScript() const { return script_; }
     const std::string& getState() const { return state_; }
     const std::string& getGasConsumed() const { return gasConsumed_; }
@@ -203,7 +239,7 @@ public:
     const nlohmann::json& getNotifications() const { return notifications_; }
     const nlohmann::json& getDiagnostics() const { return diagnostics_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
-    
+
 private:
     std::string script_;
     std::string state_;
@@ -221,11 +257,11 @@ private:
 class NeoGetUnclaimedGasResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
+
     const std::string& getUnclaimed() const { return unclaimed_; }
     const std::string& getAddress() const { return address_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
-    
+
 private:
     std::string unclaimed_;
     std::string address_;
@@ -236,10 +272,10 @@ private:
 class NeoGetWalletBalanceResponse {
 public:
     void parseJson(const nlohmann::json& json);
-    
+
     const std::string& getBalance() const { return balance_; }
     const nlohmann::json& getRawJson() const { return rawJson_; }
-    
+
 private:
     std::string balance_;
     nlohmann::json rawJson_;

@@ -8,7 +8,7 @@ namespace neocpp {
 /// Base exception class for Neo SDK
 class NeoException : public std::runtime_error {
 public:
-    explicit NeoException(const std::string& message) 
+    explicit NeoException(const std::string& message)
         : std::runtime_error(message) {}
 };
 
@@ -17,7 +17,7 @@ class NotImplementedException : public NeoException {
 public:
     explicit NotImplementedException(const std::string& message)
         : NeoException("Not implemented: " + message) {}
-    
+
     NotImplementedException()
         : NeoException("Method not yet implemented") {}
 };

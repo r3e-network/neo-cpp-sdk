@@ -19,6 +19,5 @@ namespace nep2_error {
      * @return A NEP2Error with invalid format message
      */
     NEP2Error invalidFormat(const std::string& message);
-}
-
+} // namespace nep2_error
 } // namespace neocpp

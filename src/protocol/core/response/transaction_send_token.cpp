@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/transaction_send_token.hpp"
 
 namespace neocpp {

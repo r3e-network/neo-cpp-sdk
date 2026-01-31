@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/transaction_attribute.hpp"
 
 namespace neocpp {

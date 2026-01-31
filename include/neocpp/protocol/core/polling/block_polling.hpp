@@ -22,46 +22,46 @@ private:
     std::atomic<uint32_t> lastBlockIndex_;
     std::unique_ptr<std::thread> pollingThread_;
     std::chrono::milliseconds pollInterval_;
-    
+
 public:
     /// Constructor
     /// @param rpcClient The RPC client
     /// @param pollInterval The polling interval in milliseconds
-    explicit BlockPolling(const SharedPtr<NeoRpcClient>& rpcClient, 
+    explicit BlockPolling(const SharedPtr<NeoRpcClient>& rpcClient,
                          std::chrono::milliseconds pollInterval = std::chrono::milliseconds(1000));
-    
+
     /// Destructor
     ~BlockPolling();
-    
+
     /// Start polling
     void start();
-    
+
     /// Stop polling
     void stop();
-    
+
     /// Check if polling is running
     /// @return True if polling
     bool isRunning() const { return running_; }
-    
+
     /// Subscribe to block updates
     /// @param callback The callback function
     void subscribe(std::function<void(uint32_t)> callback);
-    
+
     /// Clear all subscriptions
     void clearSubscriptions();
-    
+
     /// Get last block index
     /// @return The last block index
-    uint32_t getLastBlockIndex() const { return lastBlockIndex_; }
-    
+    [[nodiscard]] uint32_t getLastBlockIndex() const { return lastBlockIndex_; }
+
     /// Set poll interval
     /// @param interval The interval in milliseconds
     void setPollInterval(std::chrono::milliseconds interval) { pollInterval_ = interval; }
-    
+
 private:
     /// Polling loop
     void pollLoop();
-    
+
     /// Notify subscribers
     /// @param blockIndex The new block index
     void notifySubscribers(uint32_t blockIndex);

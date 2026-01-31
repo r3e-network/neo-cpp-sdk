@@ -8,11 +8,11 @@
 
 namespace neocpp {
 
-NefFile::NefFile() : magic_("NEF3"), compiler_("NeoCpp"), version_("1.0.0") {
+NefFile::NefFile() : magic_("NEF3"), compiler_("NeoCpp"), version_("1.0.0"), source_(""), checksum_(4, 0) {
 }
 
-NefFile::NefFile(const Bytes& script, const std::string& compiler, const std::string& version)
-    : magic_("NEF3"), compiler_(compiler), version_(version), script_(script) {
+NefFile::NefFile(const Bytes& script, const std::string& compiler, const std::string& version, const std::string& source)
+    : magic_("NEF3"), compiler_(compiler), version_(version), source_(source), script_(script), checksum_(4, 0) {
     updateChecksum();
 }
 

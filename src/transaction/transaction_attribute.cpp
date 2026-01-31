@@ -1,3 +1,4 @@
+
 #include "neocpp/transaction/transaction_attribute.hpp"
 #include "neocpp/serialization/binary_writer.hpp"
 #include "neocpp/serialization/binary_reader.hpp"
@@ -8,17 +9,15 @@ namespace neocpp {
 void TransactionAttribute::serialize(BinaryWriter& writer) const {
     writer.writeUInt8(static_cast<uint8_t>(getType()));
     serializeWithoutType(writer);
-}
-
+} // namespace neocpp
 SharedPtr<TransactionAttribute> TransactionAttribute::highPriority() {
     return std::make_shared<HighPriorityAttribute>();
-}
-
+} // namespace neocpp
 SharedPtr<TransactionAttribute> TransactionAttribute::deserialize(BinaryReader& reader) {
     auto type = static_cast<TransactionAttributeType>(reader.readUInt8());
-    
+
     SharedPtr<TransactionAttribute> attribute;
-    
+
     switch (type) {
         case TransactionAttributeType::HIGH_PRIORITY:
             attribute = std::make_shared<HighPriorityAttribute>();
@@ -43,10 +42,9 @@ SharedPtr<TransactionAttribute> TransactionAttribute::deserialize(BinaryReader& 
         default:
             throw DeserializationException("Unknown transaction attribute type: " + std::to_string(static_cast<int>(type)));
     }
-    
-    return attribute;
-}
 
+    return attribute;
+} // namespace neocpp
 size_t OracleResponseAttribute::getSize() const {
     // Type byte + uint64 (id) + uint8 (code) + var bytes (result)
     size_t varIntSize = 1; // Default for values < 0xFD
@@ -58,20 +56,16 @@ size_t OracleResponseAttribute::getSize() const {
         varIntSize = 9;
     }
     return 1 + 8 + 1 + varIntSize + result_.size();
-}
-
+} // namespace neocpp
 void OracleResponseAttribute::serializeWithoutType(BinaryWriter& writer) const {
     writer.writeUInt64(id_);
     writer.writeUInt8(code_);
     writer.writeVarBytes(result_);
-}
-
+} // namespace neocpp
 void NotValidBeforeAttribute::serializeWithoutType(BinaryWriter& writer) const {
     writer.writeUInt32(height_);
-}
-
+} // namespace neocpp
 void ConflictsAttribute::serializeWithoutType(BinaryWriter& writer) const {
     hash_.serialize(writer);
-}
-
+} // namespace neocpp
 } // namespace neocpp

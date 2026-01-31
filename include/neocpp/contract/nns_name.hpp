@@ -30,7 +30,7 @@ public:
      * Get the name as a byte vector
      * @return The name as a byte vector
      */
-    Bytes getBytes() const;
+    [[nodiscard]] Bytes getBytes() const;
 
     /**
      * Check if the name is a second-level domain

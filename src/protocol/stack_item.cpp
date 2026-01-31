@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/stack_item.hpp"
 #include "neocpp/utils/hex.hpp"
 #include <algorithm>
@@ -10,13 +11,11 @@ nlohmann::json ByteStringStackItem::toJson() const {
         {"type", "ByteString"},
         {"value", Hex::encode(value_)}
     };
-}
-
+} // namespace neocpp
 std::string ByteStringStackItem::getString() const {
     // Try to interpret as UTF-8 string
     return std::string(value_.begin(), value_.end());
-}
-
+} // namespace neocpp
 // ArrayStackItem implementation
 nlohmann::json ArrayStackItem::toJson() const {
     nlohmann::json items = nlohmann::json::array();
@@ -27,8 +26,7 @@ nlohmann::json ArrayStackItem::toJson() const {
         {"type", "Array"},
         {"value", items}
     };
-}
-
+} // namespace neocpp
 // MapStackItem implementation
 nlohmann::json MapStackItem::toJson() const {
     nlohmann::json entries = nlohmann::json::array();
@@ -42,16 +40,15 @@ nlohmann::json MapStackItem::toJson() const {
         {"type", "Map"},
         {"value", entries}
     };
-}
-
+} // namespace neocpp
 // Static factory method
 StackItemPtr StackItem::fromJson(const nlohmann::json& json) {
     if (!json.contains("type")) {
         throw DeserializationException("Stack item JSON must contain 'type' field");
     }
-    
-    std::string type = json["type"];
-    
+
+    std::string type = json["type"].get<std::string>();
+
     if (type == "Boolean") {
         return std::make_shared<BooleanStackItem>(json["value"].get<bool>());
     }
@@ -102,6 +99,5 @@ StackItemPtr StackItem::fromJson(const nlohmann::json& json) {
     else {
         throw DeserializationException("Unknown stack item type: " + type);
     }
-}
-
+} // namespace neocpp
 } // namespace neocpp

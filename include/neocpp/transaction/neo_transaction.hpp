@@ -25,7 +25,7 @@ public:
 
     /**
      * Constructor for NeoTransaction
-     * 
+     *
      * @param neoCpp The NeoCpp instance
      * @param version The transaction version
      * @param nonce The transaction nonce
@@ -56,7 +56,7 @@ public:
      * Get the transaction hash
      * @return The transaction hash
      */
-    Bytes getHash() const;
+    [[nodiscard]] Bytes getHash() const;
 
     /**
      * Get the transaction hash as a hexadecimal string
@@ -86,19 +86,19 @@ public:
      * Get the transaction version
      * @return The transaction version
      */
-    uint8_t getVersion() const;
+    [[nodiscard]] uint8_t getVersion() const;
 
     /**
      * Get the transaction nonce
      * @return The transaction nonce
      */
-    uint32_t getNonce() const;
+    [[nodiscard]] uint32_t getNonce() const;
 
     /**
      * Get the block until which the transaction is valid
      * @return The block until which the transaction is valid
      */
-    uint32_t getValidUntilBlock() const;
+    [[nodiscard]] uint32_t getValidUntilBlock() const;
 
     /**
      * Get the transaction signers
@@ -110,13 +110,13 @@ public:
      * Get the system fee in GAS fractions
      * @return The system fee
      */
-    int64_t getSystemFee() const;
+    [[nodiscard]] int64_t getSystemFee() const;
 
     /**
      * Get the network fee in GAS fractions
      * @return The network fee
      */
-    int64_t getNetworkFee() const;
+    [[nodiscard]] int64_t getNetworkFee() const;
 
     /**
      * Get the transaction attributes
@@ -147,6 +147,18 @@ public:
      * @param blockCount The block count
      */
     void setBlockCountWhenSent(uint32_t blockCount);
+
+    /**
+     * Serialize the transaction without witnesses
+     * @return The serialized transaction bytes
+     */
+    Bytes serializeWithoutWitnesses() const;
+
+    /**
+     * Serialize the transaction with witnesses
+     * @return The serialized transaction bytes
+     */
+    Bytes serialize() const;
 
 private:
     std::shared_ptr<NeoCpp> neoCpp_;

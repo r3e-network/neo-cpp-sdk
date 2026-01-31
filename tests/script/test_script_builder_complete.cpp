@@ -28,33 +28,40 @@ TEST_CASE("ScriptBuilder Complete Tests", "[script]") {
     SECTION("Push byte array") {
         ScriptBuilder builder;
         
-        // Test 1 byte
+        // Test 1 byte (uses raw length byte for small data <= 75 bytes)
         Bytes data1(1, 0x01);
         builder.pushData(data1);
-        REQUIRE(builder.toArray()[0] == 0x0c);
+        REQUIRE(builder.toArray()[0] == 0x01);  // raw length
         REQUIRE(builder.toArray()[1] == 0x01);
         
         builder.clear();
-        // Test 75 bytes
+        // Test 75 bytes (uses raw length byte)
         Bytes data75(75, 0x01);
         builder.pushData(data75);
-        REQUIRE(builder.toArray()[0] == 0x0c);
-        REQUIRE(builder.toArray()[1] == 0x4b);
+        REQUIRE(builder.toArray()[0] == 0x4b);  // 75 raw
+        REQUIRE(builder.toArray()[1] == 0x01);
         
         builder.clear();
-        // Test 256 bytes
+        // Test 76 bytes (uses PUSHDATA1 for > 75 bytes)
+        Bytes data76(76, 0x01);
+        builder.pushData(data76);
+        REQUIRE(builder.toArray()[0] == 0x12);  // PUSHDATA1
+        REQUIRE(builder.toArray()[1] == 0x4c);  // 76
+        
+        builder.clear();
+        // Test 256 bytes (uses PUSHDATA2)
         Bytes data256(256, 0x01);
         builder.pushData(data256);
-        REQUIRE(builder.toArray()[0] == 0x0d);
-        REQUIRE(builder.toArray()[1] == 0x00);
+        REQUIRE(builder.toArray()[0] == 0x13);  // PUSHDATA2
+        REQUIRE(builder.toArray()[1] == 0x00);  // 256 little-endian
         REQUIRE(builder.toArray()[2] == 0x01);
         
         builder.clear();
-        // Test 65536 bytes
+        // Test 65536 bytes (uses PUSHDATA4)
         Bytes data65536(65536, 0x01);
         builder.pushData(data65536);
-        REQUIRE(builder.toArray()[0] == 0x0e);
-        REQUIRE(builder.toArray()[1] == 0x00);
+        REQUIRE(builder.toArray()[0] == 0x14);  // PUSHDATA4
+        REQUIRE(builder.toArray()[1] == 0x00);  // 65536 little-endian
         REQUIRE(builder.toArray()[2] == 0x00);
         REQUIRE(builder.toArray()[3] == 0x01);
         REQUIRE(builder.toArray()[4] == 0x00);
@@ -63,21 +70,21 @@ TEST_CASE("ScriptBuilder Complete Tests", "[script]") {
     SECTION("Push string") {
         ScriptBuilder builder;
         
-        // Empty string
+        // Empty string (raw length 0)
         builder.pushString("");
-        REQUIRE(builder.toArray() == Bytes{0x0c, 0x00});
+        REQUIRE(builder.toArray() == Bytes{0x00});
         
         builder.clear();
-        // Single char
+        // Single char (raw length 1)
         builder.pushString("a");
-        REQUIRE(builder.toArray() == Bytes{0x0c, 0x01, 0x61});
+        REQUIRE(builder.toArray() == Bytes{0x01, 0x61});
         
         builder.clear();
         // Long string (10000 chars)
         std::string longString(10000, 'a');
         builder.pushString(longString);
-        REQUIRE(builder.toArray()[0] == 0x0d);
-        REQUIRE(builder.toArray()[1] == 0x10);
+        REQUIRE(builder.toArray()[0] == 0x13);  // PUSHDATA2
+        REQUIRE(builder.toArray()[1] == 0x10);  // 10000 little-endian
         REQUIRE(builder.toArray()[2] == 0x27);
     }
     
@@ -137,15 +144,13 @@ TEST_CASE("ScriptBuilder Complete Tests", "[script]") {
         // Verify script structure
         size_t offset = 0;
         REQUIRE(script[offset++] == static_cast<uint8_t>(OpCode::PUSH2));
-        REQUIRE(script[offset++] == static_cast<uint8_t>(OpCode::PUSHDATA1));
+        // 33 bytes uses raw length (0x21 = 33)
         REQUIRE(script[offset++] == 0x21);
         // Skip first key (33 bytes)
         offset += 33;
-        REQUIRE(script[offset++] == static_cast<uint8_t>(OpCode::PUSHDATA1));
         REQUIRE(script[offset++] == 0x21);
         // Skip second key (33 bytes)
         offset += 33;
-        REQUIRE(script[offset++] == static_cast<uint8_t>(OpCode::PUSHDATA1));
         REQUIRE(script[offset++] == 0x21);
         // Skip third key (33 bytes)
         offset += 33;
@@ -160,7 +165,7 @@ TEST_CASE("ScriptBuilder Complete Tests", "[script]") {
         
         // Verify script structure
         size_t offset = 0;
-        REQUIRE(script[offset++] == static_cast<uint8_t>(OpCode::PUSHDATA1));
+        // 33 bytes uses raw length (0x21 = 33)
         REQUIRE(script[offset++] == 0x21);
         // Skip key (33 bytes)
         for (size_t i = 0; i < 33; i++) {

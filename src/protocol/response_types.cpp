@@ -22,8 +22,7 @@ void NeoGetVersionResponse::parseJson(const nlohmann::json& json) {
         protocol_ = json["protocol"];
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 // NeoGetPeersResponse
 void NeoGetPeersResponse::parseJson(const nlohmann::json& json) {
     if (json.contains("connected")) {
@@ -36,8 +35,7 @@ void NeoGetPeersResponse::parseJson(const nlohmann::json& json) {
         bad_ = json["bad"];
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 // NeoGetBlockResponse
 void NeoGetBlockResponse::parseJson(const nlohmann::json& json) {
     if (json.contains("hash")) {
@@ -78,8 +76,7 @@ void NeoGetBlockResponse::parseJson(const nlohmann::json& json) {
         hasNextBlockHash_ = true;
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 // NeoGetRawTransactionResponse
 void NeoGetRawTransactionResponse::parseJson(const nlohmann::json& json) {
     if (json.contains("hash")) {
@@ -128,8 +125,7 @@ void NeoGetRawTransactionResponse::parseJson(const nlohmann::json& json) {
         blockTime_ = json["blocktime"].get<uint64_t>();
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 // NeoGetApplicationLogResponse
 void NeoGetApplicationLogResponse::parseJson(const nlohmann::json& json) {
     if (json.contains("txid")) {
@@ -139,8 +135,7 @@ void NeoGetApplicationLogResponse::parseJson(const nlohmann::json& json) {
         executions_ = json["executions"];
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 // NeoGetContractStateResponse
 void NeoGetContractStateResponse::parseJson(const nlohmann::json& json) {
     if (json.contains("id")) {
@@ -159,8 +154,7 @@ void NeoGetContractStateResponse::parseJson(const nlohmann::json& json) {
         manifest_ = json["manifest"];
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 // NeoGetNep17BalancesResponse
 void NeoGetNep17BalancesResponse::parseJson(const nlohmann::json& json) {
     if (json.contains("address")) {
@@ -176,8 +170,7 @@ void NeoGetNep17BalancesResponse::parseJson(const nlohmann::json& json) {
         }
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 // NeoInvokeResultResponse
 void NeoInvokeResultResponse::parseJson(const nlohmann::json& json) {
     if (json.contains("script")) {
@@ -208,8 +201,7 @@ void NeoInvokeResultResponse::parseJson(const nlohmann::json& json) {
         diagnostics_ = json["diagnostics"];
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 // NeoGetUnclaimedGasResponse
 void NeoGetUnclaimedGasResponse::parseJson(const nlohmann::json& json) {
     if (json.contains("unclaimed")) {
@@ -219,14 +211,12 @@ void NeoGetUnclaimedGasResponse::parseJson(const nlohmann::json& json) {
         address_ = json["address"].get<std::string>();
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 // NeoGetWalletBalanceResponse
 void NeoGetWalletBalanceResponse::parseJson(const nlohmann::json& json) {
     if (json.contains("balance")) {
         balance_ = json["balance"].get<std::string>();
     }
     rawJson_ = json;
-}
-
+} // namespace neocpp
 } // namespace neocpp

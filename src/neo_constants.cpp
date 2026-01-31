@@ -1,3 +1,4 @@
+
 #include "neocpp/neo_constants.hpp"
 
 namespace neocpp {

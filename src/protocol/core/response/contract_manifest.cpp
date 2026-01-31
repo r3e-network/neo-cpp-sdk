@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/contract_manifest.hpp"
 #include <algorithm>
 
@@ -7,7 +8,7 @@ ContractManifest::ContractManifest(const nlohmann::json& json) {
     if (json.contains("name")) {
         name_ = json["name"].get<std::string>();
     }
-    
+
     if (json.contains("groups")) {
         for (const auto& group : json["groups"]) {
             Group g;
@@ -16,7 +17,7 @@ ContractManifest::ContractManifest(const nlohmann::json& json) {
             groups_.push_back(g);
         }
     }
-    
+
     if (json.contains("features")) {
         for (const auto& [key, value] : json["features"].items()) {
             Feature f;
@@ -25,13 +26,13 @@ ContractManifest::ContractManifest(const nlohmann::json& json) {
             features_.push_back(f);
         }
     }
-    
+
     if (json.contains("supportedstandards")) {
         for (const auto& standard : json["supportedstandards"]) {
             supportedStandards_.push_back(standard.get<std::string>());
         }
     }
-    
+
     if (json.contains("permissions")) {
         for (const auto& perm : json["permissions"]) {
             Permission p;
@@ -42,23 +43,23 @@ ContractManifest::ContractManifest(const nlohmann::json& json) {
             permissions_.push_back(p);
         }
     }
-    
+
     if (json.contains("trusts")) {
         for (const auto& trust : json["trusts"]) {
             trusts_.push_back(trust.get<std::string>());
         }
     }
-    
+
     if (json.contains("abi")) {
         const auto& abi = json["abi"];
-        
+
         if (abi.contains("methods")) {
             for (const auto& method : abi["methods"]) {
                 Method m;
                 m.name = method["name"].get<std::string>();
                 m.offset = method["offset"].get<int>();
                 m.safe = method.value("safe", false);
-                
+
                 if (method.contains("parameters")) {
                     for (const auto& param : method["parameters"]) {
                         Parameter p;
@@ -67,20 +68,20 @@ ContractManifest::ContractManifest(const nlohmann::json& json) {
                         m.parameters.push_back(p);
                     }
                 }
-                
+
                 if (method.contains("returntype")) {
                     m.returnType.type = method["returntype"].get<std::string>();
                 }
-                
+
                 methods_.push_back(m);
             }
         }
-        
+
         if (abi.contains("events")) {
             for (const auto& event : abi["events"]) {
                 Event e;
                 e.name = event["name"].get<std::string>();
-                
+
                 if (event.contains("parameters")) {
                     for (const auto& param : event["parameters"]) {
                         Parameter p;
@@ -89,22 +90,21 @@ ContractManifest::ContractManifest(const nlohmann::json& json) {
                         e.parameters.push_back(p);
                     }
                 }
-                
+
                 events_.push_back(e);
             }
         }
     }
-    
+
     if (json.contains("extra")) {
         extra_ = json["extra"];
     }
-}
-
+} // namespace neocpp
 nlohmann::json ContractManifest::toJson() const {
     nlohmann::json json;
-    
+
     json["name"] = name_;
-    
+
     nlohmann::json groups = nlohmann::json::array();
     for (const auto& group : groups_) {
         nlohmann::json g;
@@ -113,15 +113,15 @@ nlohmann::json ContractManifest::toJson() const {
         groups.push_back(g);
     }
     json["groups"] = groups;
-    
+
     nlohmann::json features;
     for (const auto& feature : features_) {
         features[feature.name] = feature.value;
     }
     json["features"] = features;
-    
+
     json["supportedstandards"] = supportedStandards_;
-    
+
     nlohmann::json permissions = nlohmann::json::array();
     for (const auto& perm : permissions_) {
         nlohmann::json p;
@@ -130,18 +130,18 @@ nlohmann::json ContractManifest::toJson() const {
         permissions.push_back(p);
     }
     json["permissions"] = permissions;
-    
+
     json["trusts"] = trusts_;
-    
+
     nlohmann::json abi;
-    
+
     nlohmann::json methods = nlohmann::json::array();
     for (const auto& method : methods_) {
         nlohmann::json m;
         m["name"] = method.name;
         m["offset"] = method.offset;
         m["safe"] = method.safe;
-        
+
         nlohmann::json params = nlohmann::json::array();
         for (const auto& param : method.parameters) {
             nlohmann::json p;
@@ -150,17 +150,17 @@ nlohmann::json ContractManifest::toJson() const {
             params.push_back(p);
         }
         m["parameters"] = params;
-        
+
         m["returntype"] = method.returnType.type;
         methods.push_back(m);
     }
     abi["methods"] = methods;
-    
+
     nlohmann::json events = nlohmann::json::array();
     for (const auto& event : events_) {
         nlohmann::json e;
         e["name"] = event.name;
-        
+
         nlohmann::json params = nlohmann::json::array();
         for (const auto& param : event.parameters) {
             nlohmann::json p;
@@ -172,24 +172,21 @@ nlohmann::json ContractManifest::toJson() const {
         events.push_back(e);
     }
     abi["events"] = events;
-    
+
     json["abi"] = abi;
-    
+
     if (!extra_.is_null()) {
         json["extra"] = extra_;
     }
-    
-    return json;
-}
 
+    return json;
+} // namespace neocpp
 SharedPtr<ContractManifest> ContractManifest::fromJson(const nlohmann::json& json) {
     return std::make_shared<ContractManifest>(json);
-}
-
+} // namespace neocpp
 bool ContractManifest::supportsStandard(const std::string& standard) const {
     return std::find(supportedStandards_.begin(), supportedStandards_.end(), standard) != supportedStandards_.end();
-}
-
+} // namespace neocpp
 const ContractManifest::Method* ContractManifest::getMethod(const std::string& name) const {
     for (const auto& method : methods_) {
         if (method.name == name) {
@@ -197,8 +194,7 @@ const ContractManifest::Method* ContractManifest::getMethod(const std::string& n
         }
     }
     return nullptr;
-}
-
+} // namespace neocpp
 const ContractManifest::Event* ContractManifest::getEvent(const std::string& name) const {
     for (const auto& event : events_) {
         if (event.name == name) {
@@ -206,6 +202,5 @@ const ContractManifest::Event* ContractManifest::getEvent(const std::string& nam
         }
     }
     return nullptr;
-}
-
+} // namespace neocpp
 } // namespace neocpp

@@ -20,7 +20,7 @@ public:
     static int toInt(NeoVMStateType state) {
         return static_cast<int>(state);
     }
-    
+
     /// Convert integer value to enum
     static NeoVMStateType fromInt(int value) {
         switch (value) {
@@ -32,7 +32,7 @@ public:
                 throw std::invalid_argument("Unknown NeoVMStateType value: " + std::to_string(value));
         }
     }
-    
+
     /// Convert enum to JSON string value
     static std::string toJsonString(NeoVMStateType state) {
         switch (state) {
@@ -44,7 +44,7 @@ public:
                 throw std::invalid_argument("Unknown NeoVMStateType");
         }
     }
-    
+
     /// Convert JSON string value to enum
     static NeoVMStateType fromJsonString(const std::string& value) {
         if (value == "NONE" || value.empty()) return NeoVMStateType::NONE;

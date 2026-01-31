@@ -1,5 +1,5 @@
-#ifndef NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_WALLET_BALANCE_HPP
-#define NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_WALLET_BALANCE_HPP
+#pragma once
+
 
 #include <string>
 #include <optional>
@@ -18,7 +18,7 @@ public:
         std::string balance;
 
         Balance() = default;
-        
+
         explicit Balance(const std::string& balance) : balance(balance) {}
 
         bool operator==(const Balance& other) const {
@@ -29,7 +29,7 @@ public:
     };
 
     NeoGetWalletBalance() = default;
-    
+
     explicit NeoGetWalletBalance(const nlohmann::json& j) {
         from_json(j);
     }
@@ -44,11 +44,11 @@ public:
 
     void from_json(const nlohmann::json& j) override {
         Response<NeoGetWalletBalance>::from_json(j);
-        
+
         if (j.contains("result") && !j["result"].is_null()) {
             auto resultJson = j["result"];
             Balance balance;
-            
+
             // Handle both lowercase and uppercase "balance" key
             if (resultJson.contains("balance")) {
                 balance.balance = resultJson["balance"].get<std::string>();
@@ -61,20 +61,20 @@ public:
                     balance.balance = it.value().get<std::string>();
                 }
             }
-            
+
             result = balance;
         }
     }
 
     nlohmann::json to_json() const override {
         auto j = Response<NeoGetWalletBalance>::to_json();
-        
+
         if (result.has_value()) {
             nlohmann::json resultJson;
             resultJson["balance"] = result->balance;
             j["result"] = resultJson;
         }
-        
+
         return j;
     }
 
@@ -84,4 +84,3 @@ private:
 
 } // namespace neocpp
 
-#endif // NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_WALLET_BALANCE_HPP

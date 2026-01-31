@@ -33,6 +33,5 @@ namespace transaction_error {
      * @return A TransactionError with transaction configuration error message
      */
     TransactionError transactionConfiguration(const std::string& message);
-}
-
+} // namespace transaction_error
 } // namespace neocpp

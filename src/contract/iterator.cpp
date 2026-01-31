@@ -1,6 +1,7 @@
 #include "neocpp/contract/iterator.hpp"
 #include "neocpp/protocol/neo_rpc_client.hpp"
 #include "neocpp/exceptions.hpp"
+#include "neocpp/logger.hpp"
 
 namespace neocpp {
 
@@ -19,8 +20,10 @@ Iterator::~Iterator() {
         if (!traversed_) {
             terminate();
         }
+    } catch (const std::exception& e) {
+        LOG_DEBUG(std::string("Error during iterator destruction: ") + e.what());
     } catch (...) {
-        // Ignore errors during destruction
+        LOG_DEBUG("Unknown error during iterator destruction");
     }
 }
 
@@ -50,8 +53,10 @@ void Iterator::terminate() {
         try {
             client_->terminateSession(sessionId_);
             traversed_ = true;
+        } catch (const std::exception& e) {
+            LOG_DEBUG(std::string("Error terminating iterator session: ") + e.what());
         } catch (...) {
-            // Best effort
+            LOG_DEBUG("Unknown error terminating iterator session");
         }
     }
 }

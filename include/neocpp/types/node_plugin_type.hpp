@@ -43,7 +43,7 @@ public:
                 throw std::invalid_argument("Unknown NodePluginType");
         }
     }
-    
+
     /// Convert string value to enum
     static NodePluginType fromString(const std::string& value) {
         if (value == "ApplicationLogs") return NodePluginType::APPLICATION_LOGS;

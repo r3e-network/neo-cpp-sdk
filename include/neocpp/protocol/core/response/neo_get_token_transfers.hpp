@@ -1,5 +1,5 @@
-#ifndef NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_TOKEN_TRANSFERS_HPP
-#define NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_TOKEN_TRANSFERS_HPP
+#pragma once
+
 
 #include <string>
 #include <vector>
@@ -45,7 +45,7 @@ template<typename T>
 class NeoGetTokenTransfers : public Response<T> {
 public:
     NeoGetTokenTransfers() = default;
-    
+
     explicit NeoGetTokenTransfers(const nlohmann::json& j) {
         this->from_json(j);
     }
@@ -53,4 +53,3 @@ public:
 
 } // namespace neocpp
 
-#endif // NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_TOKEN_TRANSFERS_HPP

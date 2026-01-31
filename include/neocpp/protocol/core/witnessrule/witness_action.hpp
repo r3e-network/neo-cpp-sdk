@@ -9,7 +9,7 @@ namespace neocpp {
 enum class WitnessAction : uint8_t {
     /// Deny the witness
     DENY = 0x00,
-    
+
     /// Allow the witness
     ALLOW = 0x01
 };
@@ -24,8 +24,7 @@ inline std::string toString(WitnessAction action) {
         default:
             return "Unknown";
     }
-}
-
+} // namespace neocpp
 /// Convert string to WitnessAction
 inline WitnessAction witnessActionFromString(const std::string& str) {
     if (str == "Deny" || str == "deny" || str == "DENY") {
@@ -34,6 +33,5 @@ inline WitnessAction witnessActionFromString(const std::string& str) {
         return WitnessAction::ALLOW;
     }
     return WitnessAction::DENY;
-}
-
+} // namespace neocpp
 } // namespace neocpp

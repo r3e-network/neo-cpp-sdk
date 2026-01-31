@@ -1,5 +1,5 @@
-#ifndef NEOCPP_PROTOCOL_CORE_RESPONSE_TRANSACTION_HPP
-#define NEOCPP_PROTOCOL_CORE_RESPONSE_TRANSACTION_HPP
+#pragma once
+
 
 #include <string>
 #include <vector>
@@ -150,27 +150,27 @@ struct Transaction {
         j["sysfee"] = sysFee;
         j["netfee"] = netFee;
         j["validuntilblock"] = validUntilBlock;
-        
+
         nlohmann::json signersArray = nlohmann::json::array();
         for (const auto& signer : signers) {
             signersArray.push_back(signer.to_json());
         }
         j["signers"] = signersArray;
-        
+
         nlohmann::json attributesArray = nlohmann::json::array();
         for (const auto& attr : attributes) {
             attributesArray.push_back(attr.to_json());
         }
         j["attributes"] = attributesArray;
-        
+
         j["script"] = script;
-        
+
         nlohmann::json witnessesArray = nlohmann::json::array();
         for (const auto& witness : witnesses) {
             witnessesArray.push_back(witness.to_json());
         }
         j["witnesses"] = witnessesArray;
-        
+
         if (blockHash.has_value()) {
             j["blockhash"] = blockHash->toString();
         }
@@ -183,11 +183,10 @@ struct Transaction {
         if (vmState.has_value()) {
             j["vmstate"] = NeoVMStateTypeToString(vmState.value());
         }
-        
+
         return j;
     }
 };
 
 } // namespace neocpp
 
-#endif // NEOCPP_PROTOCOL_CORE_RESPONSE_TRANSACTION_HPP

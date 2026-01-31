@@ -8,46 +8,46 @@ using namespace neocpp;
 TEST_CASE("OpCode Tests", "[script]") {
     
     SECTION("OpCode byte conversion") {
-        // Test conversion to/from byte
-        REQUIRE(OpCodeHelper::toByte(OpCode::PUSH0) == 0x10);
-        REQUIRE(OpCodeHelper::toByte(OpCode::PUSH1) == 0x11);
-        REQUIRE(OpCodeHelper::toByte(OpCode::NOP) == 0x21);
-        REQUIRE(OpCodeHelper::toByte(OpCode::SYSCALL) == 0x41);
-        REQUIRE(OpCodeHelper::toByte(OpCode::DUP) == 0x4A);
-        REQUIRE(OpCodeHelper::toByte(OpCode::ADD) == 0x9E);
+        // Test Neo N3 opcode values
+        REQUIRE(OpCodeHelper::toByte(OpCode::PUSH0) == 0x20);
+        REQUIRE(OpCodeHelper::toByte(OpCode::PUSH1) == 0x21);
+        REQUIRE(OpCodeHelper::toByte(OpCode::PUSH16) == 0x30);
+        REQUIRE(OpCodeHelper::toByte(OpCode::NOP) == 0x61);
+        REQUIRE(OpCodeHelper::toByte(OpCode::SYSCALL) == 0x81);
+        REQUIRE(OpCodeHelper::toByte(OpCode::DUP) == 0x87);
+        REQUIRE(OpCodeHelper::toByte(OpCode::ADD) == 0xDB);
         
         // Test reverse conversion
-        REQUIRE(OpCodeHelper::fromByte(0x10) == OpCode::PUSH0);
-        REQUIRE(OpCodeHelper::fromByte(0x11) == OpCode::PUSH1);
-        REQUIRE(OpCodeHelper::fromByte(0x21) == OpCode::NOP);
-        REQUIRE(OpCodeHelper::fromByte(0x41) == OpCode::SYSCALL);
+        REQUIRE(OpCodeHelper::fromByte(0x20) == OpCode::PUSH0);
+        REQUIRE(OpCodeHelper::fromByte(0x21) == OpCode::PUSH1);
+        REQUIRE(OpCodeHelper::fromByte(0x61) == OpCode::NOP);
+        REQUIRE(OpCodeHelper::fromByte(0x81) == OpCode::SYSCALL);
     }
     
     SECTION("Push opcodes range") {
-        // PUSH0 to PUSH16 should be consecutive
+        // PUSH0 to PUSH16 should be consecutive (0x20-0x30)
         uint8_t push0 = OpCodeHelper::toByte(OpCode::PUSH0);
         uint8_t push1 = OpCodeHelper::toByte(OpCode::PUSH1);
         uint8_t push16 = OpCodeHelper::toByte(OpCode::PUSH16);
         
+        REQUIRE(push0 == 0x20);
         REQUIRE(push1 == push0 + 1);
         REQUIRE(push16 == push0 + 16);
         
-        // Check all PUSH opcodes
+        // Check all PUSH opcodes return correct values
         for (int i = 0; i <= 16; i++) {
             OpCode pushOp = OpCodeHelper::fromByte(push0 + i);
-            if (OpCodeHelper::isPush(pushOp)) {
-                int value = OpCodeHelper::getPushValue(pushOp);
-                REQUIRE(value == i);
-            }
+            int value = OpCodeHelper::getPushValue(pushOp);
+            REQUIRE(value == i);
         }
     }
     
     SECTION("Special push opcodes") {
-        REQUIRE(OpCodeHelper::toByte(OpCode::PUSHM1) == 0x0F);  // Push -1
+        REQUIRE(OpCodeHelper::toByte(OpCode::PUSHM1) == 0x1F);  // Push -1
         REQUIRE(OpCodeHelper::toByte(OpCode::PUSHNULL) == 0x0B);
-        REQUIRE(OpCodeHelper::toByte(OpCode::PUSHDATA1) == 0x0C);
-        REQUIRE(OpCodeHelper::toByte(OpCode::PUSHDATA2) == 0x0D);
-        REQUIRE(OpCodeHelper::toByte(OpCode::PUSHDATA4) == 0x0E);
+        REQUIRE(OpCodeHelper::toByte(OpCode::PUSHDATA1) == 0x12);
+        REQUIRE(OpCodeHelper::toByte(OpCode::PUSHDATA2) == 0x13);
+        REQUIRE(OpCodeHelper::toByte(OpCode::PUSHDATA4) == 0x14);
         
         // Integer push opcodes
         REQUIRE(OpCodeHelper::toByte(OpCode::PUSHINT8) == 0x00);
@@ -60,81 +60,81 @@ TEST_CASE("OpCode Tests", "[script]") {
     
     SECTION("Flow control opcodes") {
         // Jump opcodes
-        REQUIRE(OpCodeHelper::toByte(OpCode::JMP) == 0x22);
-        REQUIRE(OpCodeHelper::toByte(OpCode::JMP_L) == 0x23);
-        REQUIRE(OpCodeHelper::toByte(OpCode::JMPIF) == 0x24);
-        REQUIRE(OpCodeHelper::toByte(OpCode::JMPIF_L) == 0x25);
-        REQUIRE(OpCodeHelper::toByte(OpCode::JMPIFNOT) == 0x26);
-        REQUIRE(OpCodeHelper::toByte(OpCode::JMPIFNOT_L) == 0x27);
+        REQUIRE(OpCodeHelper::toByte(OpCode::JMP) == 0x62);
+        REQUIRE(OpCodeHelper::toByte(OpCode::JMP_L) == 0x63);
+        REQUIRE(OpCodeHelper::toByte(OpCode::JMPIF) == 0x64);
+        REQUIRE(OpCodeHelper::toByte(OpCode::JMPIF_L) == 0x65);
+        REQUIRE(OpCodeHelper::toByte(OpCode::JMPIFNOT) == 0x66);
+        REQUIRE(OpCodeHelper::toByte(OpCode::JMPIFNOT_L) == 0x67);
         
         // Call and return
-        REQUIRE(OpCodeHelper::toByte(OpCode::CALL) == 0x34);
-        REQUIRE(OpCodeHelper::toByte(OpCode::CALL_L) == 0x35);
-        REQUIRE(OpCodeHelper::toByte(OpCode::RET) == 0x40);
-        REQUIRE(OpCodeHelper::toByte(OpCode::SYSCALL) == 0x41);
+        REQUIRE(OpCodeHelper::toByte(OpCode::CALL) == 0x74);
+        REQUIRE(OpCodeHelper::toByte(OpCode::CALL_L) == 0x75);
+        REQUIRE(OpCodeHelper::toByte(OpCode::RET) == 0x80);
+        REQUIRE(OpCodeHelper::toByte(OpCode::SYSCALL) == 0x81);
         
         // Exception handling
-        REQUIRE(OpCodeHelper::toByte(OpCode::ABORT) == 0x38);
-        REQUIRE(OpCodeHelper::toByte(OpCode::ASSERT) == 0x39);
-        REQUIRE(OpCodeHelper::toByte(OpCode::THROW) == 0x3A);
+        REQUIRE(OpCodeHelper::toByte(OpCode::ABORT) == 0x78);
+        REQUIRE(OpCodeHelper::toByte(OpCode::ASSERT) == 0x79);
+        REQUIRE(OpCodeHelper::toByte(OpCode::THROW) == 0x7A);
     }
     
     SECTION("Stack manipulation opcodes") {
-        REQUIRE(OpCodeHelper::toByte(OpCode::DEPTH) == 0x43);
-        REQUIRE(OpCodeHelper::toByte(OpCode::DROP) == 0x45);
-        REQUIRE(OpCodeHelper::toByte(OpCode::DUP) == 0x4A);
-        REQUIRE(OpCodeHelper::toByte(OpCode::OVER) == 0x4B);
-        REQUIRE(OpCodeHelper::toByte(OpCode::PICK) == 0x4D);
-        REQUIRE(OpCodeHelper::toByte(OpCode::SWAP) == 0x50);
-        REQUIRE(OpCodeHelper::toByte(OpCode::ROT) == 0x51);
-        REQUIRE(OpCodeHelper::toByte(OpCode::CLEAR) == 0x49);
+        REQUIRE(OpCodeHelper::toByte(OpCode::DEPTH) == 0x82);
+        REQUIRE(OpCodeHelper::toByte(OpCode::DROP) == 0x83);
+        REQUIRE(OpCodeHelper::toByte(OpCode::DUP) == 0x87);
+        REQUIRE(OpCodeHelper::toByte(OpCode::OVER) == 0x88);
+        REQUIRE(OpCodeHelper::toByte(OpCode::PICK) == 0x89);
+        REQUIRE(OpCodeHelper::toByte(OpCode::SWAP) == 0x8B);
+        REQUIRE(OpCodeHelper::toByte(OpCode::ROT) == 0x8C);
+        REQUIRE(OpCodeHelper::toByte(OpCode::CLEAR) == 0x86);
     }
     
     SECTION("Arithmetic opcodes") {
-        REQUIRE(OpCodeHelper::toByte(OpCode::ADD) == 0x9E);
-        REQUIRE(OpCodeHelper::toByte(OpCode::SUB) == 0x9F);
-        REQUIRE(OpCodeHelper::toByte(OpCode::MUL) == 0xA0);
-        REQUIRE(OpCodeHelper::toByte(OpCode::DIV) == 0xA1);
-        REQUIRE(OpCodeHelper::toByte(OpCode::MOD) == 0xA2);
-        REQUIRE(OpCodeHelper::toByte(OpCode::POW) == 0xA3);
-        REQUIRE(OpCodeHelper::toByte(OpCode::SQRT) == 0xA4);
-        REQUIRE(OpCodeHelper::toByte(OpCode::ABS) == 0x9A);
-        REQUIRE(OpCodeHelper::toByte(OpCode::NEGATE) == 0x9B);
-        REQUIRE(OpCodeHelper::toByte(OpCode::INC) == 0x9C);
-        REQUIRE(OpCodeHelper::toByte(OpCode::DEC) == 0x9D);
+        REQUIRE(OpCodeHelper::toByte(OpCode::ADD) == 0xDB);
+        REQUIRE(OpCodeHelper::toByte(OpCode::SUB) == 0xDC);
+        REQUIRE(OpCodeHelper::toByte(OpCode::MUL) == 0xDD);
+        REQUIRE(OpCodeHelper::toByte(OpCode::DIV) == 0xDE);
+        REQUIRE(OpCodeHelper::toByte(OpCode::MOD) == 0xDF);
+        REQUIRE(OpCodeHelper::toByte(OpCode::POW) == 0xE0);
+        REQUIRE(OpCodeHelper::toByte(OpCode::SQRT) == 0xE1);
+        REQUIRE(OpCodeHelper::toByte(OpCode::ABS) == 0xD7);
+        REQUIRE(OpCodeHelper::toByte(OpCode::NEGATE) == 0xD8);
+        REQUIRE(OpCodeHelper::toByte(OpCode::INC) == 0xD9);
+        REQUIRE(OpCodeHelper::toByte(OpCode::DEC) == 0xDA);
     }
     
     SECTION("Logical opcodes") {
-        REQUIRE(OpCodeHelper::toByte(OpCode::AND) == 0x91);
-        REQUIRE(OpCodeHelper::toByte(OpCode::OR) == 0x92);
-        REQUIRE(OpCodeHelper::toByte(OpCode::XOR) == 0x93);
-        REQUIRE(OpCodeHelper::toByte(OpCode::NOT) == 0xAA);
-        REQUIRE(OpCodeHelper::toByte(OpCode::BOOLAND) == 0xAB);
-        REQUIRE(OpCodeHelper::toByte(OpCode::BOOLOR) == 0xAC);
-        REQUIRE(OpCodeHelper::toByte(OpCode::INVERT) == 0x90);
+        REQUIRE(OpCodeHelper::toByte(OpCode::AND) == 0xD1);
+        REQUIRE(OpCodeHelper::toByte(OpCode::OR) == 0xD2);
+        REQUIRE(OpCodeHelper::toByte(OpCode::XOR) == 0xD3);
+        REQUIRE(OpCodeHelper::toByte(OpCode::NOT) == 0xEA);
+        REQUIRE(OpCodeHelper::toByte(OpCode::BOOLAND) == 0xEB);
+        REQUIRE(OpCodeHelper::toByte(OpCode::BOOLOR) == 0xEC);
+        REQUIRE(OpCodeHelper::toByte(OpCode::INVERT) == 0xD0);
     }
     
     SECTION("Comparison opcodes") {
-        REQUIRE(OpCodeHelper::toByte(OpCode::EQUAL) == 0x97);
-        REQUIRE(OpCodeHelper::toByte(OpCode::NOTEQUAL) == 0x98);
-        REQUIRE(OpCodeHelper::toByte(OpCode::LT) == 0xB5);
-        REQUIRE(OpCodeHelper::toByte(OpCode::LE) == 0xB6);
-        REQUIRE(OpCodeHelper::toByte(OpCode::GT) == 0xB7);
-        REQUIRE(OpCodeHelper::toByte(OpCode::GE) == 0xB8);
-        REQUIRE(OpCodeHelper::toByte(OpCode::MIN) == 0xB9);
-        REQUIRE(OpCodeHelper::toByte(OpCode::MAX) == 0xBA);
-        REQUIRE(OpCodeHelper::toByte(OpCode::WITHIN) == 0xBB);
+        REQUIRE(OpCodeHelper::toByte(OpCode::EQUAL) == 0xD4);
+        REQUIRE(OpCodeHelper::toByte(OpCode::NOTEQUAL) == 0xD5);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LT) == 0xF3);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LE) == 0xF4);
+        REQUIRE(OpCodeHelper::toByte(OpCode::GT) == 0xF5);
+        REQUIRE(OpCodeHelper::toByte(OpCode::GE) == 0xF6);
+        REQUIRE(OpCodeHelper::toByte(OpCode::MIN) == 0xF7);
+        REQUIRE(OpCodeHelper::toByte(OpCode::MAX) == 0xF8);
+        REQUIRE(OpCodeHelper::toByte(OpCode::WITHIN) == 0xF9);
     }
     
     SECTION("Array/Struct opcodes") {
-        REQUIRE(OpCodeHelper::toByte(OpCode::NEWARRAY0) == 0xC2);
-        REQUIRE(OpCodeHelper::toByte(OpCode::NEWARRAY) == 0xC3);
-        REQUIRE(OpCodeHelper::toByte(OpCode::NEWARRAY_T) == 0xC4);
+        REQUIRE(OpCodeHelper::toByte(OpCode::NEWARRAY0) == 0xC0);
+        REQUIRE(OpCodeHelper::toByte(OpCode::NEWARRAY) == 0xC1);
+        REQUIRE(OpCodeHelper::toByte(OpCode::NEWARRAY_T) == 0xC2);
         REQUIRE(OpCodeHelper::toByte(OpCode::NEWSTRUCT0) == 0xC5);
         REQUIRE(OpCodeHelper::toByte(OpCode::NEWSTRUCT) == 0xC6);
         REQUIRE(OpCodeHelper::toByte(OpCode::NEWMAP) == 0xC8);
-        REQUIRE(OpCodeHelper::toByte(OpCode::PACK) == 0xC0);
-        REQUIRE(OpCodeHelper::toByte(OpCode::UNPACK) == 0xC1);
+        REQUIRE(OpCodeHelper::toByte(OpCode::PACK) == 0xBE);
+        REQUIRE(OpCodeHelper::toByte(OpCode::UNPACK) == 0xBF);
         REQUIRE(OpCodeHelper::toByte(OpCode::APPEND) == 0xCF);
         REQUIRE(OpCodeHelper::toByte(OpCode::SETITEM) == 0xD0);
         REQUIRE(OpCodeHelper::toByte(OpCode::PICKITEM) == 0xCE);
@@ -142,33 +142,33 @@ TEST_CASE("OpCode Tests", "[script]") {
     
     SECTION("Slot opcodes") {
         // Local variable slots
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDLOC0) == 0x68);
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDLOC1) == 0x69);
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDLOC6) == 0x6E);
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDLOC) == 0x6F);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDLOC0) == 0xA3);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDLOC1) == 0xA4);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDLOC6) == 0xA9);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDLOC) == 0xAA);
         
-        REQUIRE(OpCodeHelper::toByte(OpCode::STLOC0) == 0x70);
-        REQUIRE(OpCodeHelper::toByte(OpCode::STLOC1) == 0x71);
-        REQUIRE(OpCodeHelper::toByte(OpCode::STLOC6) == 0x76);
-        REQUIRE(OpCodeHelper::toByte(OpCode::STLOC) == 0x77);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STLOC0) == 0xAB);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STLOC1) == 0xAC);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STLOC6) == 0xB1);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STLOC) == 0xB2);
         
         // Argument slots
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDARG0) == 0x78);
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDARG6) == 0x7E);
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDARG) == 0x7F);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDARG0) == 0xB3);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDARG6) == 0xB9);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDARG) == 0xBA);
         
-        REQUIRE(OpCodeHelper::toByte(OpCode::STARG0) == 0x80);
-        REQUIRE(OpCodeHelper::toByte(OpCode::STARG6) == 0x86);
-        REQUIRE(OpCodeHelper::toByte(OpCode::STARG) == 0x87);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STARG0) == 0xBB);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STARG6) == 0xC1);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STARG) == 0xC2);
         
         // Static field slots
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDSFLD0) == 0x58);
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDSFLD6) == 0x5E);
-        REQUIRE(OpCodeHelper::toByte(OpCode::LDSFLD) == 0x5F);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDSFLD0) == 0x93);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDSFLD6) == 0x99);
+        REQUIRE(OpCodeHelper::toByte(OpCode::LDSFLD) == 0x9A);
         
-        REQUIRE(OpCodeHelper::toByte(OpCode::STSFLD0) == 0x60);
-        REQUIRE(OpCodeHelper::toByte(OpCode::STSFLD6) == 0x66);
-        REQUIRE(OpCodeHelper::toByte(OpCode::STSFLD) == 0x67);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STSFLD0) == 0x9B);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STSFLD6) == 0xA1);
+        REQUIRE(OpCodeHelper::toByte(OpCode::STSFLD) == 0xA2);
     }
     
     SECTION("Type checking opcodes") {

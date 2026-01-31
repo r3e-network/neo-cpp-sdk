@@ -1,4 +1,5 @@
 #include "neocpp/transaction/witness_scope.hpp"
+#include "neocpp/exceptions.hpp"
 #include <algorithm>
 #include <sstream>
 
@@ -19,7 +20,7 @@ std::string witnessScope2String(WitnessScope scope) {
         case WitnessScope::GLOBAL:
             return "Global";
         default:
-            throw std::invalid_argument("Unknown witness scope");
+            throw IllegalArgumentException("Unknown witness scope");
     }
 }
 
@@ -37,7 +38,7 @@ WitnessScope string2WitnessScope(const std::string& scopeStr) {
     } else if (scopeStr == "Global") {
         return WitnessScope::GLOBAL;
     } else {
-        throw std::invalid_argument("Unknown witness scope string: " + scopeStr);
+        throw IllegalArgumentException("Unknown witness scope string: " + scopeStr);
     }
 }
 
@@ -51,13 +52,13 @@ uint8_t combineScopes(const std::vector<WitnessScope>& scopes) {
 
 std::vector<WitnessScope> extractScopes(uint8_t combinedScope) {
     std::vector<WitnessScope> result;
-    
+
     // Check for global scope which cannot be combined
     if (combinedScope & static_cast<uint8_t>(WitnessScope::GLOBAL)) {
         result.push_back(WitnessScope::GLOBAL);
         return result;
     }
-    
+
     // Check for each scope bit
     if (combinedScope & static_cast<uint8_t>(WitnessScope::NONE)) {
         result.push_back(WitnessScope::NONE);
@@ -74,7 +75,7 @@ std::vector<WitnessScope> extractScopes(uint8_t combinedScope) {
     if (combinedScope & static_cast<uint8_t>(WitnessScope::WITNESS_RULES)) {
         result.push_back(WitnessScope::WITNESS_RULES);
     }
-    
+
     return result;
 }
 
@@ -82,17 +83,17 @@ std::string formatScopeSet(const std::vector<WitnessScope>& scopes) {
     if (scopes.empty()) {
         return "[]";
     }
-    
+
     std::stringstream ss;
     ss << "[";
-    
+
     for (size_t i = 0; i < scopes.size(); ++i) {
         ss << witnessScope2String(scopes[i]);
         if (i < scopes.size() - 1) {
             ss << ", ";
         }
     }
-    
+
     ss << "]";
     return ss.str();
 }

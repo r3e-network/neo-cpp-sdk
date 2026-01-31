@@ -227,7 +227,7 @@ TEST_CASE("Wallet Tests", "[wallet]") {
         Wallet wallet;
         
         // Create an account outside the wallet
-        ECKeyPair keyPair = ECKeyPair::generate();
+        auto keyPair = std::make_shared<ECKeyPair>(ECKeyPair::generate());
         auto externalAccount = std::make_shared<Account>(keyPair);
         
         // Add it to the wallet
@@ -264,13 +264,10 @@ TEST_CASE("Wallet Tests", "[wallet]") {
         
         REQUIRE(wallet.size() == 3);
         
-        // Labels should be preserved (assuming Account has getLabel method)
-        // This depends on Account class implementation
-        if (account1->getLabel) {
-            REQUIRE(account1->getLabel() == "Personal");
-            REQUIRE(account2->getLabel() == "Business");
-            REQUIRE(account3->getLabel() == "");
-        }
+        // Labels should be preserved
+        REQUIRE(account1->getLabel() == "Personal");
+        REQUIRE(account2->getLabel() == "Business");
+        REQUIRE(account3->getLabel() == "");
     }
     
     SECTION("Wallet persistence (save/load)") {

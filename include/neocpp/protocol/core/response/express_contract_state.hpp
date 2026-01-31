@@ -1,5 +1,5 @@
-#ifndef NEOCPP_PROTOCOL_CORE_RESPONSE_EXPRESS_CONTRACT_STATE_HPP
-#define NEOCPP_PROTOCOL_CORE_RESPONSE_EXPRESS_CONTRACT_STATE_HPP
+#pragma once
+
 
 #include <nlohmann/json.hpp>
 #include <neocpp/types/hash160.hpp>
@@ -50,4 +50,3 @@ public:
 
 } // namespace neocpp
 
-#endif // NEOCPP_PROTOCOL_CORE_RESPONSE_EXPRESS_CONTRACT_STATE_HPP

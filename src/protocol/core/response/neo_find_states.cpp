@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/neo_find_states.hpp"
 
 namespace neocpp {

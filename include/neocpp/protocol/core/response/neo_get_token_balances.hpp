@@ -1,5 +1,5 @@
-#ifndef NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_TOKEN_BALANCES_HPP
-#define NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_TOKEN_BALANCES_HPP
+#pragma once
+
 
 #include <string>
 #include <vector>
@@ -37,7 +37,7 @@ template<typename T>
 class NeoGetTokenBalances : public Response<T> {
 public:
     NeoGetTokenBalances() = default;
-    
+
     explicit NeoGetTokenBalances(const nlohmann::json& j) {
         this->from_json(j);
     }
@@ -45,4 +45,3 @@ public:
 
 } // namespace neocpp
 
-#endif // NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_TOKEN_BALANCES_HPP

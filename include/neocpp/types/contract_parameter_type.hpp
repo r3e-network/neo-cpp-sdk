@@ -30,7 +30,7 @@ public:
     static uint8_t toByte(ContractParameterType type) {
         return static_cast<uint8_t>(type);
     }
-    
+
     /// Convert byte value to enum
     static ContractParameterType fromByte(uint8_t value) {
         switch (value) {
@@ -51,7 +51,7 @@ public:
                 throw std::invalid_argument("Unknown ContractParameterType value: " + std::to_string(value));
         }
     }
-    
+
     /// Convert enum to JSON string value
     static std::string toJsonString(ContractParameterType type) {
         switch (type) {
@@ -72,7 +72,7 @@ public:
                 throw std::invalid_argument("Unknown ContractParameterType");
         }
     }
-    
+
     /// Convert JSON string value to enum
     static ContractParameterType fromJsonString(const std::string& value) {
         if (value == "Any") return ContractParameterType::ANY;

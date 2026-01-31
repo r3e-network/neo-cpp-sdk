@@ -1,10 +1,11 @@
 #include "neocpp/contract/smart_contract.hpp"
 #include "neocpp/protocol/neo_rpc_client.hpp"
-#include "neocpp/protocol/response_types.hpp"
+#include "neocpp/protocol/response_types_impl.hpp"
 #include "neocpp/transaction/transaction_builder.hpp"
 #include "neocpp/types/contract_parameter.hpp"
 #include "neocpp/wallet/account.hpp"
 #include "neocpp/exceptions.hpp"
+#include "neocpp/logger.hpp"
 
 namespace neocpp {
 
@@ -58,7 +59,11 @@ bool SmartContract::isDeployed() {
     try {
         auto state = client_->getContractState(scriptHash_);
         return state != nullptr;
+    } catch (const std::exception& e) {
+        LOG_DEBUG(std::string("isDeployed check failed: ") + e.what());
+        return false;
     } catch (...) {
+        LOG_DEBUG("isDeployed check failed with unknown error");
         return false;
     }
 }

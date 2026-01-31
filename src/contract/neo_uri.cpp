@@ -3,6 +3,7 @@
 #include "neocpp/contract/gas_token.hpp"
 #include "neocpp/neo_swift_error.hpp"
 #include "neocpp/exceptions.hpp"
+#include "neocpp/logger.hpp"
 #include <sstream>
 #include <vector>
 

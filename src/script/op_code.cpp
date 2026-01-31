@@ -1,3 +1,4 @@
+
 #include "neocpp/script/op_code.hpp"
 #include <unordered_map>
 
@@ -58,7 +59,7 @@ std::string OpCodeHelper::getName(OpCode opcode) {
         {OpCode::GE, "GE"},
         // Add more as needed
     };
-    
+
     auto it = names.find(opcode);
     if (it != names.end()) {
         return it->second;
@@ -81,11 +82,11 @@ int OpCodeHelper::getOperandSize(OpCode opcode) {
         case OpCode::CALL:
         case OpCode::PUSHDATA1:
             return 1;
-            
+
         case OpCode::PUSHINT16:
         case OpCode::PUSHDATA2:
             return 2;
-            
+
         case OpCode::PUSHINT32:
         case OpCode::PUSHA:
         case OpCode::TRY:
@@ -102,17 +103,17 @@ int OpCodeHelper::getOperandSize(OpCode opcode) {
         case OpCode::PUSHDATA4:
         case OpCode::SYSCALL:
             return 4;
-            
+
         case OpCode::PUSHINT64:
         case OpCode::TRY_L:
             return 8;
-            
+
         case OpCode::PUSHINT128:
             return 16;
-            
+
         case OpCode::PUSHINT256:
             return 32;
-            
+
         default:
             return 0;
     }
@@ -120,8 +121,15 @@ int OpCodeHelper::getOperandSize(OpCode opcode) {
 
 bool OpCodeHelper::isPush(OpCode opcode) {
     uint8_t value = toByte(opcode);
-    return (value >= 0x00 && value <= 0x20) || value == 0x0A || value == 0x0B ||
-           (value >= 0x0C && value <= 0x0E);
+    // Neo N3 push opcodes:
+    // 0x00-0x05: PUSHINT8, PUSHINT16, PUSHINT32, PUSHINT64, PUSHINT128, PUSHINT256
+    // 0x08-0x0B: PUSHT, PUSHF, PUSHA, PUSHNULL
+    // 0x12-0x14: PUSHDATA1, PUSHDATA2, PUSHDATA4
+    // 0x1F: PUSHM1
+    // 0x20-0x30: PUSH0-PUSH16
+    return (value >= 0x00 && value <= 0x05) || (value >= 0x08 && value <= 0x0B) ||
+           (value >= 0x12 && value <= 0x14) || value == 0x1F ||
+           (value >= 0x20 && value <= 0x30);
 }
 
 int OpCodeHelper::getPushValue(OpCode opcode) {

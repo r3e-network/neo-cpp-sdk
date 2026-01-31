@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(NeoCpp VERSION 1.0.0 LANGUAGES CXX)
+project(NeoCpp VERSION 1.1.0 LANGUAGES CXX)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -38,9 +38,9 @@ if(NOT nlohmann_json_FOUND)
     )
     set(JSON_BuildTests OFF CACHE INTERNAL "")
     set(JSON_Install OFF CACHE INTERNAL "")
+    set(JSON_ImplicitConversions OFF CACHE INTERNAL "")
     FetchContent_MakeAvailable(json)
-    # Create an alias to match the installed target name
-    add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
+    # nlohmann_json creates its own namespace target, no alias needed
 else()
     message(STATUS "Found nlohmann_json: ${nlohmann_json_VERSION}")
 endif()
@@ -105,14 +105,23 @@ if(HAVE_CURL)
     target_compile_definitions(neocpp PUBLIC HAVE_CURL=1)
 endif()
 
-# Link json library
-target_link_libraries(neocpp PUBLIC nlohmann_json::nlohmann_json)
+# Link json library - handle both fetched and installed versions
+if(nlohmann_json_FOUND)
+    target_link_libraries(neocpp PUBLIC nlohmann_json::nlohmann_json)
+else()
+    # Fetched dependency - use BUILD_INTERFACE generator expression to prevent export
+    target_link_libraries(neocpp PRIVATE nlohmann_json::nlohmann_json)
+    target_include_directories(neocpp 
+        PUBLIC 
+            $<BUILD_INTERFACE:${json_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include>
+    )
+endif()
 
 # Set properties
 set_target_properties(neocpp PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
-    PUBLIC_HEADER "${NEOCPP_HEADERS}"
 )
 
 # Compiler flags
@@ -140,39 +149,50 @@ if(BUILD_EXAMPLES)
 endif()
 
 
-# Export package
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/NeoCppConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
+# Installation only supported when nlohmann_json is found via find_package
+# When fetched, we can't properly export the target
+if(nlohmann_json_FOUND)
+    # Export package
+    include(CMakePackageConfigHelpers)
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/NeoCppConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+    )
 
-# Export targets
-install(TARGETS neocpp
-    EXPORT NeoCppTargets
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-    PUBLIC_HEADER DESTINATION include/neocpp
-)
+    # Export targets
+    install(TARGETS neocpp
+        EXPORT NeoCppTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+    )
 
-install(EXPORT NeoCppTargets
-    FILE NeoCppTargets.cmake
-    NAMESPACE NeoCpp::
-    DESTINATION lib/cmake/NeoCpp
-)
+    install(EXPORT NeoCppTargets
+        FILE NeoCppTargets.cmake
+        NAMESPACE NeoCpp::
+        DESTINATION lib/cmake/NeoCpp
+    )
 
-configure_file(cmake/NeoCppConfig.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/NeoCppConfig.cmake"
-    @ONLY
-)
+    # Install public headers preserving directory structure
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/neocpp
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.hpp"
+    )
 
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/NeoCppConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/NeoCppConfigVersion.cmake"
-    DESTINATION lib/cmake/NeoCpp
-)
+    configure_file(cmake/NeoCppConfig.cmake.in
+        "${CMAKE_CURRENT_BINARY_DIR}/NeoCppConfig.cmake"
+        @ONLY
+    )
+
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/NeoCppConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/NeoCppConfigVersion.cmake"
+        DESTINATION lib/cmake/NeoCpp
+    )
+else()
+    message(STATUS "nlohmann_json was fetched - installation disabled. Install nlohmann_json to enable 'make install'")
+endif()
 
 # Print configuration summary
 message(STATUS "NeoCpp Configuration:")

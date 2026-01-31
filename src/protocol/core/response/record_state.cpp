@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/record_state.hpp"
 
 namespace neocpp {

@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/diagnostics.hpp"
 
 namespace neocpp {

@@ -1,5 +1,5 @@
-#ifndef NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_CLAIMABLE_HPP
-#define NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_CLAIMABLE_HPP
+#pragma once
+
 
 #include <string>
 #include <vector>
@@ -26,8 +26,8 @@ public:
         std::string unclaimedGas;
 
         Claim() = default;
-        
-        Claim(const std::string& txId, int index, int neoValue, 
+
+        Claim(const std::string& txId, int index, int neoValue,
               int startHeight, int endHeight,
               const std::string& generatedGas, const std::string& systemFee,
               const std::string& unclaimedGas)
@@ -74,7 +74,7 @@ public:
     };
 
     NeoGetClaimable() = default;
-    
+
     explicit NeoGetClaimable(const nlohmann::json& j) {
         from_json(j);
     }
@@ -89,14 +89,14 @@ public:
 
     void from_json(const nlohmann::json& j) override {
         Response<NeoGetClaimable>::from_json(j);
-        
+
         if (j.contains("result") && !j["result"].is_null()) {
             auto resultJson = j["result"];
-            
+
             Claimables claimables;
             claimables.address = resultJson.value("address", "");
             claimables.totalUnclaimed = resultJson.value("unclaimed", "");
-            
+
             if (resultJson.contains("claimable")) {
                 for (const auto& claimJson : resultJson["claimable"]) {
                     Claim claim;
@@ -111,19 +111,19 @@ public:
                     claimables.claims.push_back(claim);
                 }
             }
-            
+
             result = claimables;
         }
     }
 
     nlohmann::json to_json() const override {
         auto j = Response<NeoGetClaimable>::to_json();
-        
+
         if (result.has_value()) {
             nlohmann::json resultJson;
             resultJson["address"] = result->address;
             resultJson["unclaimed"] = result->totalUnclaimed;
-            
+
             nlohmann::json claimsArray = nlohmann::json::array();
             for (const auto& claim : result->claims) {
                 nlohmann::json claimJson;
@@ -138,10 +138,10 @@ public:
                 claimsArray.push_back(claimJson);
             }
             resultJson["claimable"] = claimsArray;
-            
+
             j["result"] = resultJson;
         }
-        
+
         return j;
     }
 
@@ -151,4 +151,3 @@ private:
 
 } // namespace neocpp
 
-#endif // NEOCPP_PROTOCOL_CORE_RESPONSE_NEO_GET_CLAIMABLE_HPP

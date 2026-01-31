@@ -1,3 +1,4 @@
+
 #include "neocpp/types/neo_token.hpp"
 
 namespace neocpp {

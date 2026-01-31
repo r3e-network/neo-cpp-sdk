@@ -1,3 +1,4 @@
+
 #include "neocpp/protocol/core/response/oracle_response_code.hpp"
 
 namespace neocpp {

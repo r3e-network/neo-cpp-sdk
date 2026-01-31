@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "neocpp/transaction/witness_scope.hpp"
 #include <stdexcept>
+#include <algorithm>
 
 using namespace neocpp;
 

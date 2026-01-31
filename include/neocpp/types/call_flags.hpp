@@ -25,7 +25,7 @@ public:
     static uint8_t toByte(CallFlags flags) {
         return static_cast<uint8_t>(flags);
     }
-    
+
     /// Convert byte value to enum
     static CallFlags fromByte(uint8_t value) {
         switch (value) {
@@ -41,12 +41,12 @@ public:
                 throw std::invalid_argument("There exists no call flag with the provided byte value: " + std::to_string(value));
         }
     }
-    
+
     /// Combine multiple call flags
     static CallFlags combine(CallFlags a, CallFlags b) {
         return static_cast<CallFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
     }
-    
+
     /// Check if a flag is set
     static bool hasFlag(CallFlags flags, CallFlags flag) {
         return (static_cast<uint8_t>(flags) & static_cast<uint8_t>(flag)) != 0;
@@ -56,11 +56,9 @@ public:
 /// Bitwise OR operator for CallFlags
 inline CallFlags operator|(CallFlags a, CallFlags b) {
     return static_cast<CallFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
-}
-
+} // namespace neocpp
 /// Bitwise AND operator for CallFlags
 inline CallFlags operator&(CallFlags a, CallFlags b) {
     return static_cast<CallFlags>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
-}
-
+} // namespace neocpp
 } // namespace neocpp

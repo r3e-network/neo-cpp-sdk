@@ -294,6 +294,33 @@ TEST_CASE("Transaction Tests", "[transaction]") {
 
         REQUIRE(feeScript == expected);
     }
+
+    SECTION("Fee verification script works for locked account") {
+        auto account = Account::create();
+        auto expected = ScriptBuilder::buildVerificationScript(account->getKeyPair()->getPublicKey());
+
+        account->lock("pw");
+
+        auto feeScript = TransactionBuilder::buildFeeVerificationScript(account);
+        REQUIRE(feeScript == expected);
+    }
+
+    SECTION("Fee verification script works for multisig account") {
+        auto keyPair1 = std::make_shared<ECKeyPair>(ECKeyPair::generate());
+        auto keyPair2 = std::make_shared<ECKeyPair>(ECKeyPair::generate());
+
+        std::vector<SharedPtr<ECPublicKey>> publicKeys = {
+            keyPair1->getPublicKey(),
+            keyPair2->getPublicKey()
+        };
+        int signingThreshold = 2;
+
+        auto account = std::make_shared<Account>(publicKeys, signingThreshold);
+        auto expected = ScriptBuilder::buildVerificationScript(publicKeys, signingThreshold);
+
+        auto feeScript = TransactionBuilder::buildFeeVerificationScript(account);
+        REQUIRE(feeScript == expected);
+    }
     
     SECTION("Transaction size calculation") {
         Transaction tx;

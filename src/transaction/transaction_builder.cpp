@@ -669,10 +669,11 @@ nlohmann::json TransactionBuilder::buildSignersJson(const std::vector<SharedPtr<
     return signersJson;
 } // namespace neocpp
 Bytes TransactionBuilder::buildFeeVerificationScript(const SharedPtr<Account>& account) {
-    if (!account || !account->getKeyPair()) {
-        throw IllegalArgumentException("Account must have a key pair for fee calculation");
+    Bytes verificationScript = account ? account->getVerificationScript() : Bytes();
+    if (verificationScript.empty()) {
+        throw IllegalArgumentException("Account must provide a verification script for fee calculation");
     }
-    return ScriptBuilder::buildVerificationScript(account->getKeyPair()->getPublicKey());
+    return verificationScript;
 } // namespace neocpp
 Bytes TransactionBuilder::createFakeVerificationScript(const SharedPtr<Account>& account) {
     return buildFeeVerificationScript(account);

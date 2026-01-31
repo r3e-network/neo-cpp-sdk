@@ -18,6 +18,7 @@ Account::Account(const SharedPtr<ECKeyPair>& keyPair, const std::string& label)
       isLocked_(false) {
     scriptHash_ = Hash160::fromPublicKey(keyPair->getPublicKey()->getEncoded());
     address_ = scriptHash_.toAddress();
+    verificationScript_ = ScriptBuilder::buildVerificationScript(keyPair->getPublicKey());
 } // namespace neocpp
 Account::Account(const std::string& wif, const std::string& label)
     : Account(std::make_shared<ECKeyPair>(ECKeyPair::fromWIF(wif)), label) {
@@ -31,6 +32,7 @@ Account::Account(const std::string& nep2, const std::string& password, const std
     auto tempKeyPair = std::make_shared<ECKeyPair>(NEP2::decryptToKeyPair(nep2, password));
     scriptHash_ = Hash160::fromPublicKey(tempKeyPair->getPublicKey()->getEncoded());
     address_ = scriptHash_.toAddress();
+    verificationScript_ = ScriptBuilder::buildVerificationScript(tempKeyPair->getPublicKey());
     // Don't store decrypted key
 } // namespace neocpp
 Account::Account(const std::vector<SharedPtr<ECPublicKey>>& publicKeys, int signingThreshold, const std::string& label)
@@ -43,6 +45,7 @@ Account::Account(const std::vector<SharedPtr<ECPublicKey>>& publicKeys, int sign
 
     scriptHash_ = Hash160::fromPublicKeys(publicKeys, signingThreshold);
     address_ = scriptHash_.toAddress();
+    verificationScript_ = ScriptBuilder::buildVerificationScript(publicKeys, signingThreshold);
     // For multi-sig, we don't have a single key pair
     keyPair_ = nullptr;
 } // namespace neocpp
@@ -87,6 +90,10 @@ bool Account::isMultiSig() const {
     return keyPair_ == nullptr && !isLocked_;
 } // namespace neocpp
 Bytes Account::getVerificationScript() const {
+    if (!verificationScript_.empty()) {
+        return verificationScript_;
+    }
+
     if (keyPair_) {
         return ScriptBuilder::buildVerificationScript(keyPair_->getPublicKey());
     }

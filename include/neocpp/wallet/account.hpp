@@ -21,6 +21,7 @@ private:
     Hash160 scriptHash_;
     SharedPtr<ECKeyPair> keyPair_;
     SharedPtr<Contract> contract_;
+    Bytes verificationScript_;
     bool isDefault_;
     bool isLocked_;
     std::string encryptedPrivateKey_;  // NEP-2 encrypted

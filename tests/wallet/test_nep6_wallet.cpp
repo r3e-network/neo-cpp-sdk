@@ -191,25 +191,37 @@ TEST_CASE("Nep6Wallet Tests", "[wallet]") {
             
             wallet.save(filepath, password);
         }
+
+        // Verify saved key is NEP-2
+        {
+            std::ifstream file(filepath);
+            json walletJson;
+            file >> walletJson;
+            auto key = walletJson["accounts"][0]["key"].get<std::string>();
+            REQUIRE(key.size() == 58);
+        }
         
         // Try to load with wrong password
         {
             auto wrongWallet = Nep6Wallet::load(filepath, "WrongPassword");
-            // Should either return nullptr or throw
-            if (!wrongWallet) {
-                REQUIRE(wrongWallet == nullptr);
-            }
+            REQUIRE(wrongWallet != nullptr);
+            REQUIRE(wrongWallet->size() == 1);
+            auto account = wrongWallet->getDefaultAccount();
+            REQUIRE(account != nullptr);
+            REQUIRE(account->getKeyPair() == nullptr);
         }
         
         // Load with correct password
         {
             auto correctWallet = Nep6Wallet::load(filepath, password);
             
-            if (correctWallet) {
-                REQUIRE(correctWallet->getName() == "Encrypted NEP-6");
-                REQUIRE(correctWallet->size() == 1);
-                REQUIRE(correctWallet->getExtra()["encrypted"] == true);
-            }
+            REQUIRE(correctWallet != nullptr);
+            REQUIRE(correctWallet->getName() == "Encrypted NEP-6");
+            REQUIRE(correctWallet->size() == 1);
+            REQUIRE(correctWallet->getExtra()["encrypted"] == true);
+            auto account = correctWallet->getDefaultAccount();
+            REQUIRE(account != nullptr);
+            REQUIRE(account->unlock(password));
         }
         
         // Clean up

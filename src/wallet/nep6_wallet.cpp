@@ -12,9 +12,26 @@ Nep6Wallet::Nep6Wallet(const std::string& name, const std::string& version)
 }
 
 void Nep6Wallet::save(const std::string& filepath, const std::string& password) const {
-    (void)password;  // TODO: Implement encryption if password provided
-    
     nlohmann::json json = toJson();
+
+    if (!password.empty() && json.contains("accounts")) {
+        const auto& accounts = getAccounts();
+        auto& accountsJson = json["accounts"];
+
+        if (accountsJson.is_array() && accountsJson.size() == accounts.size()) {
+            for (size_t i = 0; i < accounts.size(); ++i) {
+                const auto& account = accounts[i];
+                if (account->getKeyPair() || !account->getEncryptedPrivateKey().empty()) {
+                    try {
+                        accountsJson[i]["key"] = account->exportNEP2(password);
+                    } catch (const std::exception& e) {
+                        LOG_DEBUG(std::string("Failed to export NEP-2: ") + e.what());
+                        accountsJson[i]["key"] = nullptr;
+                    }
+                }
+            }
+        }
+    }
     
     std::ofstream file(filepath);
     if (!file.is_open()) {
@@ -87,8 +104,6 @@ nlohmann::json Nep6Wallet::toJson() const {
 }
 
 SharedPtr<Nep6Wallet> Nep6Wallet::fromJson(const nlohmann::json& json, const std::string& password) {
-    (void)password;  // TODO: Implement decryption if password provided
-    
     // Use defaults for missing fields
     std::string name = json.value("name", "NeoCpp Wallet");
     std::string version = json.value("version", "1.0");

@@ -29,9 +29,10 @@ bool Sign::verifySignature(const Bytes& message, const SharedPtr<ECDSASignature>
 }
 
 SharedPtr<ECDSASignature> Sign::signHash(const Bytes& hash, const SharedPtr<ECPrivateKey>& privateKey) {
-    // For now, delegate to signMessage which will hash again
-    // TODO: Implement proper signHash that doesn't double-hash
-    return privateKey->sign(hash);
+    if (hash.size() != 32) {
+        throw IllegalArgumentException("Hash must be 32 bytes");
+    }
+    return privateKey->signHash(hash);
 }
 
 Bytes Sign::signTransaction(const Bytes& txHash, const SharedPtr<ECPrivateKey>& privateKey) {

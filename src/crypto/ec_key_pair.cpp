@@ -163,6 +163,42 @@ SharedPtr<ECDSASignature> ECPrivateKey::sign(const Bytes& message) const {
     EC_KEY_free(eckey);
     return std::make_shared<ECDSASignature>(signature);
 } // namespace neocpp
+SharedPtr<ECDSASignature> ECPrivateKey::signHash(const Bytes& hash) const {
+    if (hash.size() != 32) {
+        throw IllegalArgumentException("Hash must be 32 bytes");
+    }
+
+    EC_KEY* eckey = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    if (!eckey) {
+        throw CryptoException("Failed to create EC_KEY");
+    }
+
+    BIGNUM* priv_bn = BN_bin2bn(key_.data(), 32, nullptr);
+    if (!priv_bn || EC_KEY_set_private_key(eckey, priv_bn) != 1) {
+        if (priv_bn) BN_free(priv_bn);
+        EC_KEY_free(eckey);
+        throw CryptoException("Failed to set private key");
+    }
+    BN_free(priv_bn);
+
+    ECDSA_SIG* sig = ECDSA_do_sign(hash.data(), hash.size(), eckey);
+    if (!sig) {
+        EC_KEY_free(eckey);
+        throw SignException("Failed to sign hash");
+    }
+
+    const BIGNUM* r;
+    const BIGNUM* s;
+    ECDSA_SIG_get0(sig, &r, &s);
+
+    Bytes signature(64);
+    BN_bn2binpad(r, signature.data(), 32);
+    BN_bn2binpad(s, signature.data() + 32, 32);
+
+    ECDSA_SIG_free(sig);
+    EC_KEY_free(eckey);
+    return std::make_shared<ECDSASignature>(signature);
+} // namespace neocpp
 ECPrivateKey::~ECPrivateKey() {
     // Securely wipe the private key from memory using OpenSSL's secure zeroization
     OPENSSL_cleanse(key_.data(), key_.size());
@@ -220,6 +256,46 @@ bool ECPublicKey::verify(const Bytes& message, const SharedPtr<ECDSASignature>& 
     Bytes hash = HashUtils::sha256(message);
 
     // Verify
+    int valid = ECDSA_do_verify(hash.data(), hash.size(), sig, eckey);
+
+    ECDSA_SIG_free(sig);
+    EC_KEY_free(eckey);
+    return valid == 1;
+} // namespace neocpp
+bool ECPublicKey::verifyHash(const Bytes& hash, const SharedPtr<ECDSASignature>& signature) const {
+    if (hash.size() != 32) {
+        return false;
+    }
+
+    EC_KEY* eckey = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    if (!eckey) {
+        return false;
+    }
+
+    const EC_GROUP* group = EC_KEY_get0_group(eckey);
+    EC_POINT* pub_point = EC_POINT_new(group);
+    Bytes encoded = getEncoded();
+
+    if (!EC_POINT_oct2point(group, pub_point, encoded.data(), encoded.size(), nullptr)) {
+        EC_POINT_free(pub_point);
+        EC_KEY_free(eckey);
+        return false;
+    }
+
+    EC_KEY_set_public_key(eckey, pub_point);
+    EC_POINT_free(pub_point);
+
+    Bytes sigBytes = signature->getBytes();
+    ECDSA_SIG* sig = ECDSA_SIG_new();
+    if (!sig) {
+        EC_KEY_free(eckey);
+        return false;
+    }
+
+    BIGNUM* r = BN_bin2bn(sigBytes.data(), 32, nullptr);
+    BIGNUM* s = BN_bin2bn(sigBytes.data() + 32, 32, nullptr);
+    ECDSA_SIG_set0(sig, r, s);
+
     int valid = ECDSA_do_verify(hash.data(), hash.size(), sig, eckey);
 
     ECDSA_SIG_free(sig);

@@ -52,6 +52,11 @@ public:
     /// @return The signature
     SharedPtr<ECDSASignature> sign(const Bytes& message) const;
 
+    /// Sign a 32-byte hash directly (no additional hashing)
+    /// @param hash The hash to sign
+    /// @return The signature
+    SharedPtr<ECDSASignature> signHash(const Bytes& hash) const;
+
     /// Destructor - securely wipes the private key from memory
     ~ECPrivateKey();
 };
@@ -99,6 +104,12 @@ public:
     /// @param signature The signature to verify
     /// @return True if signature is valid
     bool verify(const Bytes& message, const SharedPtr<ECDSASignature>& signature) const;
+
+    /// Verify a signature over a 32-byte hash directly (no additional hashing)
+    /// @param hash The hash that was signed
+    /// @param signature The signature to verify
+    /// @return True if signature is valid
+    bool verifyHash(const Bytes& hash, const SharedPtr<ECDSASignature>& signature) const;
 
     /// Get the script hash for this public key
     /// @return The script hash

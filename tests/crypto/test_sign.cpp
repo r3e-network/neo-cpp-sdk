@@ -3,6 +3,7 @@
 #include "neocpp/crypto/ec_key_pair.hpp"
 #include "neocpp/crypto/ecdsa_signature.hpp"
 #include "neocpp/utils/hex.hpp"
+#include "neocpp/crypto/hash.hpp"
 #include "neocpp/exceptions.hpp"
 #include <string>
 #include <vector>
@@ -97,8 +98,6 @@ TEST_CASE("Sign Tests", "[crypto]") {
         );
     }
     
-    // TODO: Enable these tests once Sign functions are fully implemented
-    /*
     SECTION("Sign message with private key") {
         // Create private key
         Bytes privateKeyBytes = Hex::decode(privateKeyHex);
@@ -109,11 +108,27 @@ TEST_CASE("Sign Tests", "[crypto]") {
         
         // Sign the message
         auto signature = Sign::signMessage(messageBytes, privateKey);
+        auto publicKey = privateKey->getPublicKey();
         
         // Verify signature components
         REQUIRE(signature->getR().size() == 32);
         REQUIRE(signature->getS().size() == 32);
         REQUIRE(signature->getBytes().size() == 64);
+        REQUIRE(publicKey->verify(messageBytes, signature));
     }
-    */
+
+    SECTION("Sign hash with private key") {
+        Bytes privateKeyBytes = Hex::decode(privateKeyHex);
+        auto privateKey = std::make_shared<ECPrivateKey>(privateKeyBytes);
+        Bytes messageBytes(testMessage.begin(), testMessage.end());
+        Bytes digest = HashUtils::sha256(messageBytes);
+
+        auto signature = Sign::signHash(digest, privateKey);
+        auto publicKey = privateKey->getPublicKey();
+
+        REQUIRE(signature->getR().size() == 32);
+        REQUIRE(signature->getS().size() == 32);
+        REQUIRE(signature->getBytes().size() == 64);
+        REQUIRE(publicKey->verifyHash(digest, signature));
+    }
 }

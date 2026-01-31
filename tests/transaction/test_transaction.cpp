@@ -10,6 +10,8 @@
 #include "neocpp/serialization/binary_writer.hpp"
 #include "neocpp/serialization/binary_reader.hpp"
 #include "neocpp/utils/hex.hpp"
+#include "neocpp/transaction/witness_scope.hpp"
+#include <nlohmann/json.hpp>
 
 using namespace neocpp;
 
@@ -250,6 +252,40 @@ TEST_CASE("Transaction Tests", "[transaction]") {
             Hash160 witnessHash = Hash160::fromScript(witnesses[i]->getVerificationScript());
             REQUIRE(witnessHash == signers[i]->getAccount());
         }
+    }
+
+    SECTION("Signer JSON serialization") {
+        Hash160 account1("23ba2703c53263e8d6e522dc32203339dcd8eee9");
+        Hash160 account2("e707714512577b42f9a011f8b31b4e9afc96e196");
+        Hash160 account3("7f6a0dbb086d3d2d91646c97e6635c016b6b51f4");
+
+        auto signer1 = std::make_shared<Signer>(account1, WitnessScope::NONE);
+        auto signer2 = std::make_shared<Signer>(account2, WitnessScope::CUSTOM_GROUPS);
+        auto combinedScopes = static_cast<WitnessScope>(WitnessScopeHelper::combineScopes({
+            WitnessScope::CALLED_BY_ENTRY,
+            WitnessScope::CUSTOM_CONTRACTS
+        }));
+        auto signer3 = std::make_shared<Signer>(account3, combinedScopes);
+
+        auto signersJson = TransactionBuilder::buildSignersJson({signer1, signer2, signer3});
+
+        REQUIRE(signersJson.is_array());
+        REQUIRE(signersJson.size() == 3);
+        REQUIRE(signersJson[0]["account"] == account1.toString());
+        REQUIRE(signersJson[0]["scopes"] == "None");
+        REQUIRE(signersJson[1]["account"] == account2.toString());
+        REQUIRE(signersJson[1]["scopes"] == "CustomGroups");
+        REQUIRE(signersJson[2]["account"] == account3.toString());
+        REQUIRE(signersJson[2]["scopes"] == "CalledByEntry, CustomContracts");
+    }
+
+    SECTION("Fee verification script matches standard verification script") {
+        auto account = Account::create();
+
+        auto feeScript = TransactionBuilder::buildFeeVerificationScript(account);
+        auto expected = ScriptBuilder::buildVerificationScript(account->getKeyPair()->getPublicKey());
+
+        REQUIRE(feeScript == expected);
     }
     
     SECTION("Transaction size calculation") {

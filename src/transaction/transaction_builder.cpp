@@ -16,6 +16,7 @@
 #include "neocpp/crypto/ec_key_pair.hpp"
 #include "neocpp/script/verification_script.hpp"
 #include "neocpp/logger.hpp"
+#include "neocpp/transaction/witness_scope.hpp"
 #include <openssl/rand.h>
 #include <algorithm>
 
@@ -259,17 +260,7 @@ SharedPtr<NeoInvokeResultResponse> TransactionBuilder::callInvokeScript() {
         throw IllegalStateException("RPC client not set");
     }
 
-    // Convert signers to JSON format
-    nlohmann::json signersJson = nlohmann::json::array();
-    for (const auto& signer : transaction_->getSigners()) {
-        signersJson.push_back({
-            {"account", signer->getAccount().toString()},
-            {"scopes", signer->getScopes() == WitnessScope::CUSTOM_CONTRACTS ?
-                       "CustomContracts" :
-                       (signer->getScopes() == WitnessScope::GLOBAL ?
-                        "Global" : "CalledByEntry")}
-        });
-    }
+    auto signersJson = buildSignersJson(transaction_->getSigners());
 
     return client_->invokeScript(script, signersJson);
 } // namespace neocpp
@@ -663,39 +654,23 @@ bool TransactionBuilder::canSendCoverFees(int64_t fees) {
         return false;
     }
 } // namespace neocpp
+nlohmann::json TransactionBuilder::buildSignersJson(const std::vector<SharedPtr<Signer>>& signers) {
+    nlohmann::json signersJson = nlohmann::json::array();
+    for (const auto& signer : signers) {
+        signersJson.push_back({
+            {"account", signer->getAccount().toString()},
+            {"scopes", WitnessScopeHelper::toJsonString(signer->getScopes())}
+        });
+    }
+    return signersJson;
+} // namespace neocpp
+Bytes TransactionBuilder::buildFeeVerificationScript(const SharedPtr<Account>& account) {
+    if (!account || !account->getKeyPair()) {
+        throw IllegalArgumentException("Account must have a key pair for fee calculation");
+    }
+    return ScriptBuilder::buildVerificationScript(account->getKeyPair()->getPublicKey());
+} // namespace neocpp
 Bytes TransactionBuilder::createFakeVerificationScript(const SharedPtr<Account>& account) {
-    // For fee calculation purposes, we need a verification script that matches the structure
-    // of the account's actual script but doesn't need to be valid for signing.
-
-    // Get the account's public key hash
-    auto publicKey = account->getKeyPair()->getPublicKey();
-    auto publicKeyHash = Hash160::fromPublicKey(publicKey->getEncoded());
-
-    // Create a standard P2PKH (Pay to Public Key Hash) verification script:
-    // 1. DUP
-    // 2. HASH160
-    // 3. <PublicKeyHash>
-    // 4. EQUALVERIFY
-    // 5. CHECKSIG
-    Bytes script;
-
-    // OP_DUP (0x76)
-    script.push_back(0x76);
-
-    // OP_HASH160 (0xA9)
-    script.push_back(0xA9);
-
-    // Push public key hash (20 bytes)
-    script.push_back(0x14); // Push 20 bytes
-    auto hashBytes = publicKeyHash.toArray();
-    script.insert(script.end(), hashBytes.begin(), hashBytes.end());
-
-    // OP_EQUALVERIFY (0x88)
-    script.push_back(0x88);
-
-    // OP_CHECKSIG (0xAC)
-    script.push_back(0xAC);
-
-    return script;
+    return buildFeeVerificationScript(account);
 } // namespace neocpp
 } // namespace neocpp

@@ -4,6 +4,7 @@
 #include <vector>
 #include <functional>
 #include <map>
+#include <nlohmann/json.hpp>
 #include "neocpp/types/types.hpp"
 #include "neocpp/types/hash160.hpp"
 #include "neocpp/transaction/transaction_attribute.hpp"
@@ -242,6 +243,12 @@ public:
     /// Get the current transaction being built
     /// @return The transaction
     SharedPtr<Transaction> getTransaction() const { return transaction_; }
+
+    /// Build JSON signer array for invoke calls
+    static nlohmann::json buildSignersJson(const std::vector<SharedPtr<Signer>>& signers);
+
+    /// Build verification script used for fee calculation
+    static Bytes buildFeeVerificationScript(const SharedPtr<Account>& account);
 
 private:
     /// Initialize transaction with defaults

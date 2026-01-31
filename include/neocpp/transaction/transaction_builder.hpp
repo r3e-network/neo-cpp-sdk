@@ -236,6 +236,9 @@ public:
     /// @return The signed transaction
     SharedPtr<Transaction> buildAndSign();
 
+    /// Sort signers and witnesses to match Neo ordering rules
+    void sortSignersAndWitnesses();
+
     /// Get the current transaction being built
     /// @return The transaction
     SharedPtr<Transaction> getTransaction() const { return transaction_; }

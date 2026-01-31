@@ -323,6 +323,10 @@ SharedPtr<Transaction> TransactionBuilder::buildAndSign() {
 
     return transaction_;
 } // namespace neocpp
+void TransactionBuilder::sortSignersAndWitnesses() {
+    sortSigners();
+    sortWitnesses();
+} // namespace neocpp
 void TransactionBuilder::initializeTransaction() {
     transaction_ = std::make_shared<Transaction>();
     transaction_->setVersion(0);
@@ -355,7 +359,10 @@ void TransactionBuilder::sortSigners() {
             return a->getAccount().toString() < b->getAccount().toString();
         });
 
-    // Transaction doesn't have setSigners - signers are already in the transaction
+    transaction_->clearSigners();
+    for (const auto& signer : signers) {
+        transaction_->addSigner(signer);
+    }
 } // namespace neocpp
 void TransactionBuilder::sortWitnesses() {
     auto witnesses = transaction_->getWitnesses();
@@ -370,8 +377,7 @@ void TransactionBuilder::sortWitnesses() {
     for (const auto& signer : signers) {
         // Find matching witness by verification script hash
         for (const auto& witness : witnesses) {
-            auto scriptBytes = HashUtils::sha256ThenRipemd160(witness->getVerificationScript());
-            Hash160 scriptHash(scriptBytes);
+            Hash160 scriptHash = Hash160::fromScript(witness->getVerificationScript());
             if (scriptHash == signer->getAccount()) {
                 sortedWitnesses.push_back(witness);
                 break;
@@ -380,7 +386,10 @@ void TransactionBuilder::sortWitnesses() {
     }
 
     if (sortedWitnesses.size() == witnesses.size()) {
-        // Transaction doesn't have setWitnesses - witnesses are already in the transaction
+        transaction_->clearWitnesses();
+        for (const auto& witness : sortedWitnesses) {
+            transaction_->addWitness(witness);
+        }
     }
 } // namespace neocpp
 bool TransactionBuilder::isAllowedForHighPriority() {

@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include "neocpp/transaction/transaction.hpp"
+#include "neocpp/transaction/transaction_builder.hpp"
 #include "neocpp/transaction/signer.hpp"
 #include "neocpp/transaction/witness.hpp"
 #include "neocpp/crypto/ec_key_pair.hpp"
@@ -208,6 +209,47 @@ TEST_CASE("Transaction Tests", "[transaction]") {
         auto pubKey = account->getKeyPair()->getPublicKey();
 
         REQUIRE(pubKey->verifyHash(tx.getHash().toArray(), sig));
+    }
+
+    SECTION("Signer and witness ordering") {
+        TransactionBuilder builder;
+        auto account1 = Account::create();
+        auto account2 = Account::create();
+
+        auto signer1 = std::make_shared<Signer>(account1->getScriptHash(), WitnessScope::NONE);
+        auto signer2 = std::make_shared<Signer>(account2->getScriptHash(), WitnessScope::NONE);
+
+        // Add in reverse order
+        builder.addSigner(signer2);
+        builder.addSigner(signer1);
+
+        auto witness1 = Witness::fromSignature(Bytes(64, 0x01), account1->getKeyPair()->getPublicKey()->getEncoded());
+        auto witness2 = Witness::fromSignature(Bytes(64, 0x02), account2->getKeyPair()->getPublicKey()->getEncoded());
+
+        // Add witnesses in the same order as signers (reverse)
+        builder.addWitness(witness2);
+        builder.addWitness(witness1);
+
+        builder.sortSignersAndWitnesses();
+
+        auto tx = builder.getTransaction();
+        auto signers = tx->getSigners();
+        auto witnesses = tx->getWitnesses();
+
+        REQUIRE(signers.size() == 2);
+        REQUIRE(witnesses.size() == 2);
+
+        std::vector<Hash160> expected = {account1->getScriptHash(), account2->getScriptHash()};
+        std::sort(expected.begin(), expected.end(),
+                  [](const Hash160& a, const Hash160& b) { return a.toString() < b.toString(); });
+
+        REQUIRE(signers[0]->getAccount() == expected[0]);
+        REQUIRE(signers[1]->getAccount() == expected[1]);
+
+        for (size_t i = 0; i < signers.size(); ++i) {
+            Hash160 witnessHash = Hash160::fromScript(witnesses[i]->getVerificationScript());
+            REQUIRE(witnessHash == signers[i]->getAccount());
+        }
     }
     
     SECTION("Transaction size calculation") {

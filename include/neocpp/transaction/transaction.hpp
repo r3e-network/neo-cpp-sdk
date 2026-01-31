@@ -50,6 +50,7 @@ public:
     const std::vector<SharedPtr<TransactionAttribute>>& getAttributes() const { return attributes_; }
     const Bytes& getScript() const { return script_; }
     const std::vector<SharedPtr<Witness>>& getWitnesses() const { return witnesses_; }
+    void clearWitnesses() { witnesses_.clear(); }
 
     // Setters
     void setVersion(uint8_t version) { version_ = version; hashCalculated_ = false; }
